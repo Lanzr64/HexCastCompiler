@@ -1,3 +1,8 @@
+--[[
+    * a  mineCraft HexCasting Mod Compiler, can compile the hCode in game and output to the focus
+    * need mod ： Ducky peripheral
+    * author : Lanzr
+]]
 local path = arg[1]
 if(path == nil) then
     print("#param 1 : filePath")
@@ -7,8 +12,9 @@ if(fs.exists(path) == false) then
     print("file "..path.." is not exist!")
     return
 end
+
 local inf = io.open(path,"r") -- the source_code filename
-local str = inf.read(inf,"*all")
+local codeStr = inf.read(inf,"*all")
 inf.close(inf)
 
 local fPort = peripheral.find("focal_port")
@@ -19,6 +25,15 @@ local leftBrackIndex = nil
 
 local hexlist = {} -- the final table use to output
 
+local funcKey = nil
+local funcMap = {}
+
+function genRegex(str) return "^[ ]*"..str.."[ ]*$" end
+
+local preMap = {
+    ["include"] = genRegex("@include[ ]+([%w_]+)"),
+    ["func"] = genRegex("@func[ ]+([%w_]+)"),
+}
 local hexMap = { -- add pattern table to this table
     ["me"] = {["startDir"]="EAST",["angles"]="qaq"},
     ["{"] = {["startDir"]="WEST",["angles"]="qqq"},
@@ -28,7 +43,9 @@ local hexMap = { -- add pattern table to this table
     ["unpack"] = {["startDir"]="NORTH_WEST",["angles"]="qwaeawq"},
     ["+"] = {["startDir"]="NORTH_EAST",["angles"]="waaw"},
     ["-"] = {["startDir"]="NORTH_WEST",["angles"]="wddw"},
-    ["*"] = {["startDir"]="SOUTH_EAST",["angles"]="waqaw"}
+    ["*"] = {["startDir"]="SOUTH_EAST",["angles"]="waqaw"},
+    ["dig"] = {["startDir"]="EAST",["angles"]="qaqqqqq"},
+    ["get_block"] = {["startDir"]="EAST",["angles"]="wqaawdd"},
 }
 
 local NumMap = {
@@ -38,23 +55,25 @@ local NumMap = {
 }
 
 local regMap = {
-    ["^[ ]*([{}*+])[ ]*$"] = (function (cStr)
+    [genRegex("([{}>%*%+-=<])")] = (function (cStr)
         table.insert(hexlist,hexMap[cStr])
     return true end),
-    ["^[ ]*rm[ ]*(%d+)[ ]*$"] = (function (cStr)
+    [genRegex("rm[ ]+(%d+)")] = (function (cStr)
         addRMPattern(cStr)
     return true end),
-    ["^[ ]*(-?[%w_]+)[ ]*$"] = (function (cStr)
-        if( tonumber(cStr) ~= nil) then
-            addNumPattern(tonumber(cStr))
-        else
-            local t = hexMap[cStr]
-            if t == nil then
-                return false
-            end
-            table.insert(hexlist,t)
-        end
+    [genRegex("(-?[%d]+)")] = (function (cStr)
+        addNumPattern(tonumber(cStr))
     return true end),
+    [genRegex("([%a_]+[%w_]*)")] = (function (cStr)
+        local t = hexMap[cStr]
+        if t == nil then
+            return false
+        end
+        table.insert(hexlist,t)
+    return true end),
+    [genRegex("([%a_]+[%w_]*)%(%)")] = (function (cStr)
+        parseStr(funcMap[cStr])
+    return true end)
 }
 
 function addNumPattern(num)
@@ -103,8 +122,8 @@ function addRMPattern(rmPos)
     rmPattern["angles"] = angleStr
     table.insert(hexlist,rmPattern)
 end
-   
-function mainloop()
+ 
+function parseStr(str)
     local lastIndex = 0
     local index = -1
     local cut = ""
@@ -112,22 +131,53 @@ function mainloop()
     while ( index ~= nil) do
         local syntaxFlag = true;
         lineIndex = lineIndex + 1
-        index = string.find(str,"\n", index + 2);
+        index = string.find(str,"\n", index + 1);
         if( index ~= nil) then
-            cut = string.sub(str,lastIndex, index-1);
+            cut = string.sub(str,lastIndex+1, index-1)
         else
-            cut = string.sub(str,lastIndex, index);
+            cut = string.sub(str,lastIndex+1, index);
         end
-        cut = string.gsub(cut,"\n","")
-        lastIndex = index
-
-        for key, cb in pairs(regMap) do
-            if (string.match(cut,key)~= nil) then
-                local cStr = string.match(cut,key)
-                syntaxFlag = cb(cStr)
+        -- comment check
+        repeat
+            lastIndex = index 
+            local commentPos = string.find(cut,"#")
+            if commentPos ~= nil then
+                cut = string.sub(cut, 1,commentPos-1)
+            end
+            -- preExp regMap
+            -- include check
+            if (string.match(cut,preMap["include"])) then
+                local cStr = string.match(cut,preMap["include"])
+                local inf = io.open(cStr,"r") -- the source_code filename
+                local subStr = inf.read(inf,"*all")
+                inf.close(inf)
+                parseStr(subStr)
                 break
-            end   
-        end
+            end
+            -- func check
+            if (string.match(cut,genRegex("@func[ ]+([%w_]+)"))~= nil) then
+                local cStr = string.match(cut,preMap["func"])
+                funcMap[cStr] = ""
+                funcKey = cStr
+                break
+            elseif(string.match(cut,genRegex("@end"))) then
+                funcKey = nil
+                break
+            else
+                if(funcKey ~= nil) then
+                    funcMap[funcKey] = funcMap[funcKey]..cut.."\n"
+                    break
+                end
+            end
+            -- common regMap
+            for key, cb in pairs(regMap) do
+                if (string.match(cut,key)~= nil) then
+                    local cStr = string.match(cut,key)
+                    syntaxFlag = cb(cStr)
+                    break
+                end   
+            end
+        until true
         if syntaxFlag ~= true then
             print("Line "..lineIndex.." : "..cut.." is illegal syntax")
         end
@@ -140,4 +190,8 @@ function mainloop()
     end
 end
 
-mainloop()
+function mainloop()
+    parseStr(codeStr)
+ end
+ mainloop()
+ 
