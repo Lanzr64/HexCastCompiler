@@ -83,7 +83,7 @@ function decompilation()
         if cmd == "}" then
             indentation_level = indentation_level - 1
         end
-        for i = 0, indentation_level, 1 do
+        for i = 1, indentation_level, 1 do
             str = str.."    "
         end
         if cmd ~= nil then 
