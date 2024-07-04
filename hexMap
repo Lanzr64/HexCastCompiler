@@ -1,0 +1,35 @@
+--[[ 
+    this file is use to provide mapping tables for other tools
+]]
+function genRegex(str) return "^[\t ]*"..str.."[\t ]*$" end
+
+preMap = {
+    ["include"] = genRegex("@include[ ]+([%w_]+)"),
+    ["func"] = genRegex("@func[ ]+([%w_]+)"),
+    ["end"] = genRegex("@end"),
+}
+
+hexMap = { -- add pattern table to this table
+    ["me"] = {["startDir"]="EAST",["angles"]="qaq"}, -- Mind's Reflection
+    ["pos"] = {["startDir"]="EAST",["angles"]="aa"}, -- Compass' Purification
+    ["sight"] = {["startDir"]="EAST",["angles"]="wa"},-- Alidade's Purification
+    ["getEntityHight"] = {["startDir"]="EAST",["angles"]="awq"},  
+    ["{"] = {["startDir"]="WEST",["angles"]="qqq"},
+    ["}"] = {["startDir"]="EAST",["angles"]="eee"},
+    ["unpackList"] = {["startDir"]="NORTH_WEST",["angles"]="qwaeawq"},
+    ["packList"] = {["startDir"]="SOUTH_WEST",["angles"]="ewdqdwe"},
+    ["packVec"] = {["startDir"]="SOUTH_WEST",["angles"]="eqqqqq"},
+    ["+"] = {["startDir"]="NORTH_EAST",["angles"]="waaw"},
+    ["-"] = {["startDir"]="NORTH_WEST",["angles"]="wddw"},
+    ["*"] = {["startDir"]="SOUTH_EAST",["angles"]="waqaw"},
+    ["/"] = {["startDir"]="SOUTH_EAST",["angles"]="wdedw"},
+    ["isEqual"] = {["startDir"]="SOUTH_EAST",["angles"]="ad"},
+    ["dig"] = {["startDir"]="EAST",["angles"]="qaqqqqq"},
+    ["rayCast_getEntity"] = {["startDir"]="EAST",["angles"]="weaqa"},
+    ["rayCast_getBlock"] = {["startDir"]="EAST",["angles"]="wqaawdd"},
+    ["rayCast_getBlockRule"] = {["startDir"]="EAST",["angles"]="weddwaa"},
+    ["makeCypher"] = {["startDir"]="EAST",["angles"]="waqqqqq"},
+    ["makeTrinket"] = {["startDir"]="EAST",["angles"]="wwaqqqqqeaqeaeqqqeaeq"},
+    ["makeArtifact"] = {["startDir"]="EAST",["angles"]="wwaqqqqqeawqwqwqwqwqwwqqeadaeqqeqqeadaeqq"},
+    ["clean"] = {["startDir"]="EAST",["angles"]="qdqawwaww"},
+}
