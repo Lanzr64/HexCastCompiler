@@ -5,9 +5,7 @@ require("hexMap")
 
 local completion = require "cc.shell.completion"
 local complete = completion.build(
-completion.file,
-  completion.dir,
-  { completion.file, many = true }
+    completion.file
 )
 shell.setCompletionFunction("hedit.lua", complete)
 
