@@ -2,10 +2,9 @@
     Lets use hedit to edit hex code !
 ]]
 require("hexMap")
-
 local completion = require "cc.shell.completion"
 local complete = completion.build(
-    completion.file
+	completion.file
 )
 shell.setCompletionFunction("hedit.lua", complete)
 
@@ -173,8 +172,7 @@ end
 local function writeHighlighted(sLine)
     while #sLine > 0 do
         sLine =
-            tryWrite(sLine, "^%-%-%[%[.-%]%]", commentColour) or
-            tryWrite(sLine, "^%-%-.*", commentColour) or
+            tryWrite(sLine, "^#.*", commentColour) or
             tryWrite(sLine, "^\"\"", stringColour) or
             tryWrite(sLine, "^\".-[^\\]\"", stringColour) or
             tryWrite(sLine, "^\'\'", stringColour) or
@@ -206,7 +204,7 @@ _hexENV = {}
 for cmd, iota in pairs(hexMap) do
     local result = string.match(cmd,"[{}>%*%+-=</]")
     if result == nil then
-       _hexENV[cmd] = 0
+       _hexENV[cmd] = true
     end
 end
 
@@ -427,7 +425,25 @@ local tMenuFuncs = {
         bRunning = false
     end,
     Compile = function()
-       shell.run("hex "..sPath)
+        local sTitle = fs.getName(sPath)
+        if sTitle:sub(-4) == ".hex" then
+            sTitle = sTitle:sub(1, -5)
+        end
+        local sTempPath = bReadOnly and ".temp." .. sTitle or fs.combine(fs.getDir(sPath), ".temp." .. sTitle)
+        if fs.exists(sTempPath) then
+            set_status("Error saving to " .. sTempPath, false)
+            return
+        end
+        local ok = save(sTempPath, function(file)
+            file.write(table.concat(tLines, "\n"))
+        end)
+        if ok then
+            shell.run("hex "..sTempPath)
+            fs.delete(sTempPath)
+        else
+            set_status("Error saving to " .. sTempPath, false)
+        end
+        redrawMenu()
     end,
 }
 
