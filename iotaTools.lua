@@ -54,6 +54,15 @@ function table2str(t)
 end
 
 local numMap = {
+    ["q"] = (function (sum)
+        return sum + 5
+    end),
+    ["e"] = (function (sum)
+        return sum + 10
+    end),
+    ["d"] = (function (sum)
+        return sum / 2
+    end),
     ["w"] = (function (sum)
         return sum + 1
     end),
