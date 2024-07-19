@@ -121,28 +121,26 @@ function append()
     end
     
     f = io.open("hexMap", "r+")
-    io.input(f)
-    io.output(f)
     local hexMapFindLck =false
     local text = ""
-    repeat  
-        local ret = io.read() 
-        if ret ~= nil then
-            if not hexMapFindLck then
-                local findHexMap = string.match(ret, "^[ ]*hexMap[ ]*=")
+    if f then
+        for line in f:lines() do
+             if not hexMapFindLck then
+                local findHexMap = string.match(line, "^[ ]*hexMap[ ]*=")
                 if findHexMap ~= nil then
                     hexMapFindLck = true
                 end
             else
-                local findBracket = string.match(ret, "^[ ]*}[ ]*$")
+                local findBracket = string.match(line, "^[ ]*}[ ]*$")
                 if findBracket then
                     break
                 end
             end
-            text = text..ret.."\n"
+            text = text..line.."\n"
         end
-    until ret == nil
-    f.close(f)
+        f.close(f)
+    end
+
     f = io.open(targetFile,"w")
     f.write(f,text)
     data = dev.readIota()
