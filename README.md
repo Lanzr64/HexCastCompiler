@@ -28,3 +28,6 @@ Chinese | [Engligh](README_EN.md)
 
 ## 测试内容  
    提供我的测试hexMap映射表及两个测试法术
+
+## vscode 语法支持插件
+[HexCast Compiler Support - Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=Lanzr.hexcast-compiler-support)
