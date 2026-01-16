@@ -190,7 +190,12 @@ local toolsMap = {
     return true end)
 }
 local function mainloop()
-   toolsMap[cmd]()
+    local cb = toolsMap[cmd]
+    if cb ~= nil then
+        cb()
+    else
+        print("command "..cmd.." not found!")
+    end
 end
 
 mainloop()

@@ -1,0 +1,231 @@
+# 可以自定义挖掘范围面范围挖掘
+# 通过获得法线矢量，并重排生成新的辅助垂直矢量来构造偏移矢量
+# 根据设置的范围偏移坐标到起点位置
+# 先水平后垂直的递归挖掘
+# 每个垂直列维护自己的一个单独的递归次数
+
+# 全局变量
+# 0 挖掘范围
+# 1 水平矢量
+# 2 垂直矢量
+# 3 一级递归函数(母函数)
+# 4 二级递归函数
+
+
+@func getblockpos()
+    me
+    pos
+    me
+    sight
+    rayCast_getBlock
+@end
+
+@func getblockrule()
+    me
+    pos
+    me
+    sight
+    rayCast_getBlockRule
+@end
+
+@func try_dig()
+    # pos
+    dupe
+    getItemType
+    any2bool
+    {
+        dig
+    }
+    {
+        rm 1
+    }
+    true2or3
+    run
+@end
+
+
+# 递归函数
+# 栈顶应该是 递归次数 偏移矢量 起点坐标
+# 先判断递归次数 再挖掘
+@func call_recursion(index)
+    readFmem
+    $index
+    listSelect
+    run
+@end
+
+@func f_work(cb)
+{
+    stack321
+    dupe
+    0
+    isEqual
+    {
+        rm 1
+        rm 1
+        rm 1
+        stop
+    }
+    {
+        # 偏移矢量 起点坐标 递归次数
+        1
+        -
+        swap
+        stack321 # 递归次数 起点坐标 偏移矢量 
+        dupe 
+        stack321 # 递归次数 偏移矢量 偏移矢量 起点坐标
+        
+        dupe
+        try_dig()
+        $cb
+        # +  # 恢复到 递归次数 偏移矢量 新的起点坐标
+        # call_recursion(4) 
+    }
+    true2or3
+    run
+}
+@end
+
+@func cb_c()
+    + # 恢复到 递归次数 偏移矢量 新的起点坐标
+    call_recursion(4)
+@end
+
+@func cb_m()
+    dupe
+    readFmem
+    0
+    listSelect
+
+    readFmem
+    2
+    listSelect # 起点坐标 递归次数 偏移矢量
+    stack321 # 递归次数 偏移矢量 起点坐标
+
+    call_recursion(4) 
+    +  # 恢复到 递归次数 偏移矢量 新的起点坐标
+    
+    call_recursion(3) 
+@end
+
+@func f_work_m()
+{
+    
+    stack321
+    dupe
+    0
+    isEqual
+    {
+        rm 1
+        rm 1
+        rm 1
+        stop
+    }
+    {
+        # 偏移矢量 起点坐标 递归次数
+        1
+        -
+        swap
+        stack321 # 递归次数 起点坐标 偏移矢量 
+        dupe 
+        stack321 # 递归次数 偏移矢量 偏移矢量 起点坐标
+        
+        dupe
+        try_dig()
+        
+            dupe
+
+            readFmem
+            0
+            listSelect
+
+            readFmem
+            2
+            listSelect # 起点坐标 递归次数 偏移矢量
+            stack321 # 递归次数 偏移矢量 起点坐标
+
+            call_recursion(4) 
+            +  # 恢复到 递归次数 偏移矢量 新的起点坐标
+            
+            call_recursion(3) 
+    }
+    true2or3
+    run
+}
+@end
+
+
+@func generateOffsetVect()
+    # 三轴轴向单位矢量
+        x1
+        y1
+        z1
+        3
+        packList
+    getblockrule() # 参考列表， 方块法线矢量
+    unPackVec
+    mod
+    stack321
+    mod
+    stack321
+    mod
+    stack321
+    packVec # 参考列表，绝对值后的矢量
+    swap
+    dupe
+    stack321 # 参考列表， 参考列表， 绝对值后的矢量
+    listLocate
+    listRemove # 偏移矢量列表
+@end
+
+
+# 构造全局变量
+@func init(radius)
+    # 构造全局变量
+    $radius #范围（半径）
+    dupe
+    2
+    *
+    1
+    + # 计算得出实际范围边长
+    generateOffsetVect() # 偏移矢量列表
+    dupe
+    stack123 # 半径， 偏移矢量列表，边长
+    unpackList
+    f_work(cb_m())
+    f_work(cb_c())
+    5
+    packList
+    write2mem
+
+    # 栈顶： 半径，偏移矢量列表
+
+    unpackList
+    +
+    *
+    -1
+    *
+    # 移动坐标至起点 直接对列表进行递归
+    getblockpos() # 起点坐标
+    +
+
+@end
+
+
+init(2)
+# 栈顶 起点坐标
+
+readFmem
+0
+listSelect 
+
+readFmem
+1
+listSelect
+
+stack321 # 构造起点 递归次数 偏移矢量 起点坐标
+
+f_work(cb_m())
+run
+
+

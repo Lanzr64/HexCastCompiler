@@ -1,0 +1,125 @@
+# 连锁挖掘
+# 构造全局变量
+# 0 递归次数
+# 1 目标实体类型
+# 2 需要遍历的坐标集
+# 3 递归函数
+
+# 获取目标实体类型
+
+@func getTargetType()
+    me
+    pos
+    me
+    sight
+    rayCast_getBlock
+    dupe 
+    getItemType
+@end
+
+# 构造需要遍历的坐标集
+
+@func generateOffsetList()
+x1
+x1n
+y1
+y1n
+z1
+z1n
+6
+packList
+@end
+
+@func check_recursion()
+    readFmem
+    getListfirst
+    dupe
+    122 # 递归次数限制
+    larger
+    {
+        stop
+    }
+    {
+        1
+        +
+        pushListfirst
+        write2mem
+    }
+    true2or3
+    run
+
+@end
+
+# 每一次用来遍历每个偏移坐标的函数
+# 1. 获得偏移列表 和 上一次需要传递的坐标，构造成一个新的栈顶列表变量
+# 2. 生成处理方法，对每一个需要传递的坐标都进行运算
+    # 1. 获取传递坐标和栈顶值取和并获得方块类型
+    # 2. 与目标值做对比
+    # 3. 如果相等，把运算出的新值继续调用函数
+# 3. 托特
+
+@func EachBlockCheck()
+{   
+
+    #栈顶应该只有一个值，上一次坐标
+
+    # 递归次数检查 大循环 (相当于会检查6*递归次数的方块)
+
+    check_recursion()
+
+    # 开始构造托特图案  
+    
+    {
+        +
+        dupe
+        getItemType
+        readFmem
+        1
+        listSelect
+        isEqual # 计算坐标和，是否匹配
+        {
+            # check_recursion() # 加在这里可以用来控制小循环 （实际方块次数）
+            dupe
+            dig
+            readFmem
+            3
+            listSelect
+            run
+        }
+        {
+        }
+        true2or3 
+        run
+        rm 1
+    }
+    readFmem
+    2
+    listSelect # 上一次坐标 偏移坐标列表 
+   
+    runFEList
+}
+@end
+
+
+# mainloop
+    # 栈顶应该只有起始方块坐标一个值,其余的都在mem里
+@func init()
+    getTargetType()
+    1
+    swap
+    generateOffsetList()
+    EachBlockCheck()
+    4
+    packList
+    write2mem
+@end
+    # init done
+
+init()
+
+dupe
+dig
+readFmem
+3
+listSelect
+run

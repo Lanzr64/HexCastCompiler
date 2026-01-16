@@ -36,54 +36,6 @@ local funcKey = nil
 local funcMap = {}
 
 
--- ---------------------------
--- patch funcparam
-function findAndReplaceLiteral(source_string, target_substring, replacement_substring, num_replacements)
-    local escaped_target = string.gsub(target_substring, "([%.%+%-%*%?%^%$%(%)%[%]%{}])", "%%%1")
-    local new_string, count = string.gsub(
-        source_string,
-        escaped_target,
-        function()
-            return replacement_substring
-        end,
-        num_replacements
-    )
-
-    return new_string, count
-end
-
-function parseFuncDefine(funcstr)
-    local start1, end1 = string.find(funcstr,"^[\t ]*@func[ ]+([%w_]+)[\t ]*%(([%w,_ \t]*)%)[\t ]*\n")
-    local fundef = string.sub(funcstr,start1,end1-1)
-    local start2 = string.find(funcstr,"[\t ]*@end[\t ]*")
-    local funcbody = string.sub(funcstr,end1+1,start2-2)
-
-    local funcname, params = string.match(fundef,genRegex("@func[ ]+([%w_]+)[\t ]*%(([%w,_ \t]*)%)"))
-    local index = 0
-    for s in params:gmatch("([^ ,\t]+)") do
-        funcbody = findAndReplaceLiteral(funcbody,"$"..s,"$"..index)
-        index = index + 1
-    end
-    funcMap[funcname]=funcbody
-end
-
-function funcInvoke(cut)
-    local funcname, params = string.match(cut,genRegex("([%w_]+)[\t ]*%(([%w,_ %(%)\t]*)%)"))
-    local index = 0
-    local funcbody = funcMap[funcname]
-    for s in params:gmatch("([^ ,\t]+)") do
-        if string.match(s,genRegex("([%a_]+[%w_]*)%(([%w,_ \t]*)%)")) then
-            retstr = funcInvoke(s)
-            funcbody = findAndReplaceLiteral(funcbody,"$"..index, retstr)
-        else
-            funcbody = findAndReplaceLiteral(funcbody,"$"..index, s)
-        end
-        index = index + 1
-    end
-    return funcbody    
-end
--- ---------------------------
-
 NumMap = {
     [0] = {["startDir"]="SOUTH_EAST",["angles"]="aqaa"},
     [1] = {["startDir"]="SOUTH_EAST",["angles"]="aqaaw"},
@@ -115,6 +67,9 @@ local regMap = {
         end
         table.insert(hexlist,t)
     return true end),
+    [genRegex("([%a_]+[%w_]*)%(%)")] = (function (cStr)
+        parseStr(funcMap[cStr])
+    return true end)
 }
 
 function addNumPattern(num)
@@ -172,7 +127,6 @@ function parseStr(str)
     local index = -1
     local cut = ""
     local lineIndex = 0
-    local funcstr = ""
     while ( index ~= nil ) do
         local syntaxFlag = true;
         lineIndex = lineIndex + 1
@@ -199,27 +153,20 @@ function parseStr(str)
                 parseStr(subStr)
                 break
             end
-             -- func check
-            if (string.match(cut,genRegex("@func[ ]+([%w_]+[\t ]*%([%w,_ %(%)\t]*%))"))~= nil) then
-                funcstr = cut.."\n"
-                funcKey = true
+            -- func check
+            if (string.match(cut,genRegex("@func[ ]+([%w_]+)"))~= nil) then
+                local cStr = string.match(cut,preMap["func"])
+                funcMap[cStr] = ""
+                funcKey = cStr
                 break
             elseif(string.match(cut,genRegex("@end"))) then
                 funcKey = nil
-                funcstr = funcstr..cut.."\n"
-                parseFuncDefine(funcstr)
                 break
             else
                 if(funcKey ~= nil) then
-                    funcstr = funcstr..cut.."\n"
+                    funcMap[funcKey] = funcMap[funcKey]..cut.."\n"
                     break
                 end
-            end
-
-            if string.match(cut,genRegex("([%a_]+[%w_]*)%((.*)%)")) then
-                retstr = funcInvoke(cut)
-                parseStr(retstr)
-                break
             end
             -- common regMap
             for key, cb in pairs(regMap) do
@@ -235,13 +182,15 @@ function parseStr(str)
         end
     end
 
+    -- out put final hexlist    
+    if(fPort ~= nil) then
+        fPort.writeIota(hexlist)
+        return
+    end
 end
 
 function mainloop()
     parseStr(codeStr)
-    if(fPort ~= nil) then
-        fPort.writeIota(hexlist)
-    end
 end
 
 mainloop()

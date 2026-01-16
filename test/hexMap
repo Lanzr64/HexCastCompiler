@@ -1,0 +1,81 @@
+--[[ 
+    提供给测试用的映射表
+]]
+function genRegex(str) return "^[\t ]*"..str.."[\t ]*$" end
+
+preMap = {
+    ["include"] = genRegex("@include[ ]+([%w_]+)"),
+    ["end"] = genRegex("@end"),
+}
+
+hexMap = { -- add pattern table to this table
+    ["me"] = {["startDir"]="EAST",["angles"]="qaq"}, -- Mind's Reflection
+    ["pos"] = {["startDir"]="EAST",["angles"]="aa"}, -- Compass' Purification
+    ["sight"] = {["startDir"]="EAST",["angles"]="wa"},-- Alidade's Purification
+    ["getEntityHight"] = {["startDir"]="EAST",["angles"]="awq"},  
+    ["{"] = {["startDir"]="WEST",["angles"]="qqq"},
+    ["}"] = {["startDir"]="EAST",["angles"]="eee"},
+    ["unpackList"] = {["startDir"]="NORTH_WEST",["angles"]="qwaeawq"},
+    ["packList"] = {["startDir"]="SOUTH_WEST",["angles"]="ewdqdwe"},
+    ["packVec"] = {["startDir"]="SOUTH_WEST",["angles"]="eqqqqq"},
+    ["unPackVec"] = {["startDir"]="EAST",["angles"]="qeeeee"},
+    ["+"] = {["startDir"]="NORTH_EAST",["angles"]="waaw"},
+    ["-"] = {["startDir"]="NORTH_WEST",["angles"]="wddw"},
+    ["*"] = {["startDir"]="SOUTH_EAST",["angles"]="waqaw"},
+    ["/"] = {["startDir"]="SOUTH_EAST",["angles"]="wdedw"},
+    ["dig"] = {["startDir"]="EAST",["angles"]="qaqqqqq"},
+    ["rayCast_getEntity"] = {["startDir"]="EAST",["angles"]="weaqa"},
+    ["rayCast_getBlock"] = {["startDir"]="EAST",["angles"]="wqaawdd"},
+    ["rayCast_getBlockRule"] = {["startDir"]="EAST",["angles"]="weddwaa"},
+    ["makeCypher"] = {["startDir"]="EAST",["angles"]="waqqqqq"},
+    ["makeTrinket"] = {["startDir"]="EAST",["angles"]="wwaqqqqqeaqeaeqqqeaeq"},
+    ["makeArtifact"] = {["startDir"]="EAST",["angles"]="wwaqqqqqeawqwqwqwqwqwwqqeadaeqqeqqeadaeqq"},
+    ["clean"] = {["startDir"]="EAST",["angles"]="qdqawwaww"},
+    ["areaGetItems"] = {["startDir"]="SOUTH_EAST",["angles"]="qqqqqwdeddww"},
+
+    ["listSelect"] = {["startDir"]="NORTH_WEST",["angles"]="deeed"},
+    ["listLocate"] = {["startDir"]="EAST",["angles"]="dedqde"},
+    ["listRemove"] = {["startDir"]="SOUTH_WEST",["angles"]="edqdewaqa"},
+
+    ["swap"] = {["startDir"]="NORTH_EAST",["angles"]="aawdd"},
+    ["boost"] = {["startDir"]="SOUTH_WEST",["angles"]="awqqqwaqw"},
+    ["runFEList"] = {["startDir"]="NORTH_EAST",["angles"]="dadad"},
+    ["charge"] = {["startDir"]="NORTH_WEST",["angles"]="qqqqqwaeaeaeaeaea"},
+    ["mod"] = {["startDir"]="NORTH_EAST",["angles"]="wqaqw"},
+    ["true2or3"] = {["startDir"]="SOUTH_EAST",["angles"]="awdd"},
+    ["readFhand"] = {["startDir"]="EAST",["angles"]="aqqqqq"},
+    ["any2bool"] = {["startDir"]="NORTH_EAST",["angles"]="aw"},
+    ["getEntitySpeed"] = {["startDir"]="EAST",["angles"]="wq"},
+    ["run"] = {["startDir"]="SOUTH_EAST",["angles"]="deaqq"},
+    ["dupe"] = {["startDir"]="EAST",["angles"]="aadaa"},
+    ["light"] = {["startDir"]="NORTH_EAST",["angles"]="qqd"},
+    ["extract"] = {["startDir"]="NORTH_EAST",["angles"]="awqaedeweweweeqaqqqwaeadeeede"},
+
+    ["isEqual"] = {["startDir"]="SOUTH_EAST",["angles"]="ad"},
+    ["getItemType"] = {["startDir"]="EAST",["angles"]="qaqqaea"},
+    ["write2mem"] = {["startDir"]="NORTH_WEST",["angles"]="eqqwawqaaw"},
+    ["readFmem"] = {["startDir"]="NORTH_EAST",["angles"]="qeewdweddw"},
+    ["x1"] = {["startDir"]="NORTH_WEST",["angles"]="qqqqqea"},
+    ["x1n"] = {["startDir"]="NORTH_EAST",["angles"]="eeeeeqa"},
+    ["y1"] = {["startDir"]="NORTH_WEST",["angles"]="qqqqqew"},
+    ["y1n"] = {["startDir"]="NORTH_EAST",["angles"]="eeeeeqw"},
+    ["z1"] = {["startDir"]="NORTH_WEST",["angles"]="qqqqqed"},
+    ["z1n"] = {["startDir"]="NORTH_EAST",["angles"]="eeeeeqd"},
+    ["stack321"] = {["startDir"]="EAST",["angles"]="aaeaa"}, -- 把第三位拉到栈顶 --
+    ["stack123"] = {["startDir"]="NORTH_EAST",["angles"]="ddqdd"}, -- 把栈顶沉到第三位 --
+    ["top2list"] = {["startDir"]="EAST",["angles"]="adeeed"},
+    ["debug"] = {["startDir"]="NORTH_EAST",["angles"]="de"},
+    ["stop"] = {["startDir"]="SOUTH_WEST",["angles"]="aqdee"},
+    ["listModify"] = {["startDir"]="NORTH_WEST",["angles"]="wqaeaqw"},
+    ["getListfirst"] = {["startDir"]="SOUTH_WEST",["angles"]="aaqwqaa"},
+    ["pushListfirst"] = {["startDir"]="SOUTH_EAST",["angles"]="ddewedd"},
+    ["larger"] = {["startDir"]="SOUTH_EAST",["angles"]="e"},
+    ["smaller"] = {["startDir"]="SOUTH_WEST",["angles"]="q"},
+    ["explosion"] = {["startDir"]="EAST",["angles"]="aawaawaa"},
+    ["water"] = {["startDir"]="SOUTH_EAST",["angles"]="aqawqadaq"},
+    ["areaGetMon"] = {["startDir"]="SOUTH_EAST",["angles"]="qqqqqwdeddwq"},
+    ["temblock"] = {["startDir"]="NORTH_EAST",["angles"]="qqa"},
+    ["VecProject"] = {["startDir"]="NORTH_WEST",["angles"]="wedew"},
+    ["vec0"] = {["startDir"]="NORTH_WEST",["angles"]="qqqqq"},
+    ["pass"] = {["startDir"]="NORTH_WEST",["angles"]="qqqqq"},
+}

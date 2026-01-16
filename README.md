@@ -1,23 +1,30 @@
 # HexCastCompiler
+Chinese | [Engligh](README_EN.md)
 
-a  compiler for Minecraft mod Ducky periperals and hex casting, use in game
+一个用于Minecraft模组Ducky periperals和Hex Casting的编译器，可在游戏内使用。
 
-## files
+## 文件说明
 
-1. hexMap
-   the compiler core map, complete the hexMap table to use it
-2. hex.lua
-   the compiler
-   `Usage: hex <path>`
-3. hedit.lua
-   the text editor for in game edit hex code(hex code is code that use hexMap)
-4. iotaTools.lua
-   the helpful tool for complete hexMap and decompilation
-    `Usage: iotaTools <cmd> [Param]`
-    cmd can be :
-    - `toStr`:  get focal_port iota to string and save in `data` file
-    - `dec`:  get focal_port iota and decompile code based on hexMap and store it in `dec_out` file 
-    - `append`:  get focal_port iota and Generate mappings that are not included in the `hexMap`, store the results in a `newHexMap` file, and if append parameter `overWrite`, the `hexMap` will be overwritten
-   
-1. startup.lua
-   the initial script in cc computer lanuch,and provide param completion
+1. hexMap  
+   编译器核心映射表，需完成hexMap映射后方可使用。
+
+2. hex.lua  
+   编译器脚本  
+   使用方法：`hex <法术文件>`
+
+3. hedit.lua  
+   游戏内编辑器，用于编辑十六进制代码（即基于hexMap使用的代码）
+
+4. iotaTools.lua  
+   用于辅助完善hexMap和反编译的工具  
+   使用方法：`iotaTools <命令> [参数]`  
+   命令可选：  
+   - `toStr`：将 `focal_port` 中的 iota 转为字符串并保存至 `data` 文件  
+   - `dec`：根据hexMap对 `focal_port` 的 iota 进行反编译，结果存入 `dec_out` 文件  
+   - `append`：获取 `focal_port` 的 iota，并生成 `hexMap` 中未包含的映射，结果保存于 `newHexMap` 文件；若附带参数 `overWrite`，则会覆盖原有 `hexMap`
+
+5. startup.lua  
+   在CC电脑启动时执行的初始化脚本，提供参数自动补全功能
+
+## 测试内容  
+   提供我的测试hexMap映射表及两个测试法术
