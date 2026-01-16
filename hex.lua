@@ -4,7 +4,6 @@
     * author : Lanzr
 ]]
 require("hexMap")
-require("json")
 local completion = require "cc.shell.completion"
 local complete = completion.build(
     completion.file
