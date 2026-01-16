@@ -4,6 +4,7 @@
     * author : Lanzr
 ]]
 require("hexMap")
+require("json")
 local completion = require "cc.shell.completion"
 local complete = completion.build(
     completion.file
@@ -37,7 +38,7 @@ local funcMap = {}
 
 
 -- ---------------------------
--- patch funcparam
+-- patch
 function findAndReplaceLiteral(source_string, target_substring, replacement_substring, num_replacements)
     local escaped_target = string.gsub(target_substring, "([%.%+%-%*%?%^%$%(%)%[%]%{}])", "%%%1")
     local new_string, count = string.gsub(
@@ -51,6 +52,7 @@ function findAndReplaceLiteral(source_string, target_substring, replacement_subs
 
     return new_string, count
 end
+
 
 function parseFuncDefine(funcstr)
     local start1, end1 = string.find(funcstr,"^[\t ]*@func[ ]+([%w_]+)[\t ]*%(([%w,_ \t]*)%)[\t ]*\n")
@@ -68,18 +70,46 @@ function parseFuncDefine(funcstr)
 end
 
 function funcInvoke(cut)
-    local funcname, params = string.match(cut,genRegex("([%w_]+)[\t ]*%(([%w,_ %(%)\t]*)%)"))
+    local funcname, params_string = string.match(cut,genRegex("([%w_]+)[\t ]*%(([%w,_ %(%)\t]*)%)"))
     local index = 0
     local funcbody = funcMap[funcname]
-    for s in params:gmatch("([^ ,\t]+)") do
-        if string.match(s,genRegex("([%a_]+[%w_]*)%(([%w,_ \t]*)%)")) then
-            retstr = funcInvoke(s)
+    
+    if params_string:match("^%s*$") then
+        return funcbody
+    end
+
+    local balance = 0
+    local start_index = 1 
+    local args = {}
+    for i = 1, #params_string do
+        local char = params_string:sub(i, i) 
+
+        if char == '(' then
+            balance = balance + 1
+        elseif char == ')' then
+            balance = balance - 1
+        elseif char == ',' and balance == 0 then
+            local arg = params_string:sub(start_index, i - 1)
+            arg = arg:match("^%s*(.-)%s*$")
+            table.insert(args, arg)
+            start_index = i + 1
+        end
+    end
+
+    local last_arg = params_string:sub(start_index)
+    last_arg = last_arg:match("^%s*(.-)%s*$")
+    table.insert(args, last_arg)
+    local index = 0
+    for i, arg in ipairs(args) do
+        index = i - 1
+        if string.match(arg,genRegex("([%a_]+[%w_]*)%(([%w,_ \t]*)%)")) then
+            local retstr = funcInvoke(arg)
             funcbody = findAndReplaceLiteral(funcbody,"$"..index, retstr)
         else
-            funcbody = findAndReplaceLiteral(funcbody,"$"..index, s)
+            funcbody = findAndReplaceLiteral(funcbody,"$"..index, arg)
         end
-        index = index + 1
     end
+ 
     return funcbody    
 end
 -- ---------------------------
@@ -115,6 +145,9 @@ local regMap = {
         end
         table.insert(hexlist,t)
     return true end),
+    -- [genRegex("([%a_]+[%w_]*)%(%)")] = (function (cStr)
+    --     parseStr(funcMap[cStr])
+    -- return true end)
 }
 
 function addNumPattern(num)
