@@ -25,7 +25,7 @@ a  compiler for Minecraft mod Ducky periperals and hex casting, use in game
 
 
 ## test
-    provides my test hexmap mapping table and two test spells
+   provides my test hexmap mapping table and two test spells
 
 ## vscode syntax Support extension
 [HexCast Compiler Support - Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=Lanzr.hexcast-compiler-support)
