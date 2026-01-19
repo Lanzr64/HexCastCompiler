@@ -55,7 +55,7 @@ end
 
 
 function parseFuncDefine(funcstr)
-    local start1, end1 = string.find(funcstr,"^[\t ]*@func[ ]+([%w_]+)[\t ]*%(([%w,_ \t]*)%)[\t ]*\n")
+    local start1, end1 = string.find(funcstr,"^[\t ]*@func[ ]+([%w_]+)[\t ]*%(([%w,_ \t]*)%)[\t ]*\r?\n")
     local fundef = string.sub(funcstr,start1,end1-1)
     local start2 = string.find(funcstr,"[\t ]*@end[\t ]*")
     local funcbody = string.sub(funcstr,end1+1,start2-2)

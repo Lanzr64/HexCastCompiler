@@ -1,7 +1,7 @@
 --[[ 
     this file is use to provide mapping tables for other tools
 ]]
-function genRegex(str) return "^[\t ]*"..str.."[\t ]*$" end
+function genRegex(str) return "^[\t ]*"..str.."[\t ]*\r?$" end
 
 preMap = {
     ["include"] = genRegex("@include[ ]+([%w_]+)"),
