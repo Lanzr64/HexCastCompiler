@@ -1,7 +1,7 @@
 --[[ 
     提供给测试用的映射表
 ]]
-function genRegex(str) return "^[\t ]*"..str.."[\t ]*$" end
+function genRegex(str) return "^[\t ]*"..str.."[\t ]*\r?$" end
 
 preMap = {
     ["include"] = genRegex("@include[ ]+([%w_]+)"),
