@@ -5,7 +5,7 @@ function genRegex(str) return "^[\t ]*"..str.."[\t ]*\r?$" end
 
 preMap = {
     ["include"] = genRegex("@include[ ]+([%w_]+)"),
-    ["func"] = genRegex("@func[ ]+([%w_]+)"),
+    ["func"] = genRegex("@func[ ]+([%w_]+[\t ]*%(.*%))"),
     ["end"] = genRegex("@end"),
 }
 

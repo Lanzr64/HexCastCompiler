@@ -223,29 +223,37 @@ function parseStr(str)
             end
             -- preExp regMap
             -- include check
-            if (string.match(cut,preMap["include"])) then
-                local cStr = string.match(cut,preMap["include"])
-                local inf = io.open(cStr,"r") -- the source_code filename
-                local subStr = inf.read(inf,"*all")
-                inf.close(inf)
-                parseStr(subStr)
+            if (string.match(cut,genRegex(""))) then
                 break
             end
-             -- func check
-            if (string.match(cut,genRegex("@func[ ]+([%w_]+[\t ]*%([%w,_ %(%)\t]*%))"))~= nil) then
-                funcstr = cut.."\n"
-                funcKey = true
-                break
-            elseif(string.match(cut,genRegex("@end"))) then
-                funcKey = nil
-                funcstr = funcstr..cut.."\n"
-                parseFuncDefine(funcstr)
-                break
-            else
-                if(funcKey ~= nil) then
-                    funcstr = funcstr..cut.."\n"
+            if (string.match(cut,genRegex("@.*"))) then
+                if (string.match(cut,preMap["include"])) then
+                    local cStr = string.match(cut,preMap["include"])
+                    local inf = io.open(cStr,"r") -- the source_code filename
+                    local subStr = inf.read(inf,"*all")
+                    inf.close(inf)
+                    parseStr(subStr)
                     break
                 end
+                -- func check
+                if (string.match(cut,preMap["func"])~= nil) then
+                    funcstr = cut.."\n"
+                    funcKey = true
+                    break
+                elseif(string.match(cut,preMap["end"])) then
+                    funcKey = nil
+                    funcstr = funcstr..cut.."\n"
+                    parseFuncDefine(funcstr)
+                    break
+                end
+                -- not found anything
+                syntaxFlag = false
+                break
+            end
+            
+            if(funcKey ~= nil) then
+                funcstr = funcstr..cut.."\n"
+                break
             end
 
             if string.match(cut,genRegex("([%a_]+[%w_]*)%((.*)%)")) then
@@ -261,18 +269,28 @@ function parseStr(str)
                     break
                 end   
             end
+            if syntaxFlag then
+                break
+            end
+            syntaxFlag = false
         until true
         if syntaxFlag ~= true then
-            print("Line "..lineIndex.." : "..cut.." is illegal syntax")
+            print("Line : "..cut.." is illegal syntax")
+            break
         end
     end
 
 end
 
 function mainloop()
-    parseStr(codeStr)
-    if(fPort ~= nil) then
-        fPort.writeIota(hexlist)
+    ret = parseStr(codeStr)
+    if ret then
+        if(fPort ~= nil) then
+            fPort.writeIota(hexlist)
+        end
+        print("compile success")
+    else 
+        print("compile failed")
     end
 end
 
