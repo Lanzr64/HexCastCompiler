@@ -276,10 +276,10 @@ function parseStr(str)
         until true
         if syntaxFlag ~= true then
             print("Line : "..cut.." is illegal syntax")
-            break
+            return false
         end
     end
-
+    return true
 end
 
 function mainloop()
