@@ -288,9 +288,9 @@ function mainloop()
         if(fPort ~= nil) then
             fPort.writeIota(hexlist)
         end
-        print("compile success")
+        -- print("compile success")
     else 
-        print("compile failed")
+        -- print("compile failed")
     end
 end
 
