@@ -1,15 +1,9 @@
-require("hexMap")
 --[[
     * this tools is read iota from focal_port to string
     * if specify argument "dec" will be decompilation iota to hex code
     * author : Lanzr
 ]]
-local completion = require "cc.shell.completion"
-local complete = completion.build(
-    { completion.choice, { "toStr", "dec", "append" } },
-    { completion.choice, { "overWrite" } }
-)
-shell.setCompletionFunction("iotaTools.lua", complete)
+require("hexMap")
 
 local cmd = arg[1]
 local param = arg[2]
@@ -109,61 +103,136 @@ function decompilation()
     end
     f.close(f)
 end
+-- ----------------------------------------------
+-- term_manger
+local term_m = {
+    content = "",
+    line_index = 1,
+    cursor_pos = 1,
+    tw = 0,
+    th = 0
+}
+function term_m:init()
+    term.clear()
+    term.setCursorPos(1,1)
+    self.content = ""
+    self.line_index = 1
+    self.cursor_pos = 1
+    self.tw,self.th = term.getSize()
+end
+function term_m:tryExtend()
+    self.line_index = self.line_index + 1
+    
+    if self.cursor_pos > self.th-2 then
+        term.scroll(1)
+        term.setCursorPos(1, self.cursor_pos)
+    else
+        self.cursor_pos = self.cursor_pos + 1
+        term.setCursorPos(1, self.cursor_pos)
+    end
+end
+function term_m:write(line,move)
+    term.write(line)
+    self.content = self.content .. line
+    if move then
+        self:tryExtend()
+    end
+end
+function term_m:read()
+    line = ""
+    tx,ty = term.getCursorPos()
+    repeat
+        line = io.read()
+        term.setCursorPos(1, tx,ty)
+        jug = string.match(line, "^[\t ]*$")
+    until line ~= nil and line ~= "" and jug == nil
+    self.content = self.content .. line .. "\n"    
+    term_m:tryExtend()
+    return line
+end
+-- ----------------------------------------------
 
-function append()
+local function insert_data(filename, pos, text)
+    
+    local f = io.open(filename, "r+")
+    if not f then return nil end
+
+    f:seek("set", pos)
+    
+    local rest_content = f:read("*a")
+    
+    f:seek("set", pos)
+    
+    f:write(text)
+    f:write(rest_content)
+    
+    f:close()
+end
+-- ! append
+function handler_append()
+    data = dev.readIota()
+    if data["angles"] ~= nil then
+        data = {data}
+    end
     local targetFile = "newHexMap"
     if g_force_mode then
-        targetFile = "hexMap"
+        targetFile = "thexMap"
     end
+    -- 查找现有的表
     anti_hexMap = {}
     for cmd, iota in pairs(hexMap) do
-        anti_hexMap[iota["angles"]] = cmd
-    end
-    
-    f = io.open("hexMap", "r+")
-    local hexMapFindLck =false
-    local text = ""
-    if f then
-        for line in f:lines() do
-             if not hexMapFindLck then
-                local findHexMap = string.match(line, "^[ ]*hexMap[ ]*=")
-                if findHexMap ~= nil then
-                    hexMapFindLck = true
-                end
-            else
-                local findBracket = string.match(line, "^[ ]*}[ ]*$")
-                if findBracket then
-                    break
-                end
-            end
-            text = text..line.."\n"
-        end
-        f.close(f)
+        anti_hexMap[iota] = true
     end
 
-    f = io.open(targetFile,"w")
-    f.write(f,text)
-    data = dev.readIota()
-    for index,iota  in pairs(data) do
-        local cmd = anti_hexMap[iota["angles"]]
-        if cmd == nil then
-            if string.match(iota["angles"],"^aqaa") == nil then
-                local tmp = {}
-                for k, v in pairs(iota) do
-                    local k_type = type(k)
-                    local v_type = type(v)
-                    local key = (k_type == "string" and "[\"" .. k .. "\"]=") or (k_type == "number" and "")
-                    local value = (v_type == "table" and serialize(v)) or (v_type == "boolean" and tostring(v)) or (v_type == "string" and "\"" .. v .. "\"") or (v_type == "number" and v)
-                    tmp[#tmp + 1] = key and value and tostring(key) .. tostring(value) or nil
-                end
-                local str =  "    [\"\"] = {" .. table.concat(tmp, ",") .. "},"
-                f.write(f,str.."\n")
+    -- 获取插入点位
+    f = io.open("hexMap", "rb")
+    line = f:read("*all")
+    f:close()
+    local sp,ep = string.find(line, "[ ]*hexMap[ ]*=")
+    sp,ep = string.find(line, "\r?\n",ep+1)
+    local str =  "    [\"\"] = {\"" .. 'asdasd' .. "\"},\n"
+    -- 查找有没有新的图案
+    o_str = ""
+    o_str_lsit = {}
+    o_list = {}
+    for index,p_iota  in pairs(data) do
+        local flag = anti_hexMap[p_iota["angles"]]
+        if flag == nil then  -- 新的图案
+            -- 原版hexMap使用下面的生成
+            -- local tmp = "[\"startDir\"] = \"East\", [\"angles\"] = \"" .. p_iota["angles"] .. "\""
+            local str =  "    [\"%s\"] = \"" .. p_iota["angles"] .. "\",\n"
+            -- o_str_lsit.append(str)
+            table.insert(o_str_lsit,str)
+            -- o_list.append(true)
+            table.insert(o_list,true)
+        else
+            -- 旧的图案
+            -- o_list.append(false)
+            table.insert(o_list,false)
+        end
+    end
+    -- 插入
+    key_ls = {}
+    if g_force_mode then
+        -- 打开一个新的UI用来逐个键写入
+        term_m:init()
+        valid_index = 1
+        for i, status in pairs(o_list) do
+            if status then
+                term_m:write(i..". ",false)
+                ret = term_m:read()
+                o_str = o_str .. string.format(o_str_lsit[valid_index],ret)
+                valid_index = valid_index + 1
+            else
+                term_m:write(i..". PATTERN INVALID",true)
             end
         end
     end
-    f.write(f,"}")
-    f.close(f)
+    
+    insert_data("hexMap", ep, o_str)
+    
 end
+-- ----------------------------------------------
 
 local function getIotaMap()
     d = dev.readIota()
@@ -186,7 +255,7 @@ local toolsMap = {
                 g_force_mode = true
             end
         end
-        append()
+        handler_append()
     return true end)
 }
 local function mainloop()

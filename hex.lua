@@ -3,7 +3,7 @@
     * need mod : Ducky peripheral
     * author : Lanzr
 ]]
-require("hexMap")
+require("hexMap.lua")
 local completion = require "cc.shell.completion"
 local complete = completion.build(
     completion.file
@@ -113,23 +113,30 @@ function funcInvoke(cut)
 end
 -- ---------------------------
 
+-- ---------------------------
+-- patch
+function genPattern(angle)
+    return {["startDir"]="East",["angles"]=angle}
+end
+-- ---------------------------
+
 NumMap = {
-    [0] = {["startDir"]="SOUTH_EAST",["angles"]="aqaa"},
-    [1] = {["startDir"]="SOUTH_EAST",["angles"]="aqaaw"},
-    [2] = {["startDir"]="SOUTH_EAST",["angles"]="aqaawa"},
-    [3] = {["startDir"]="SOUTH_EAST",["angles"]="aqaawaw"},
-    [4] = {["startDir"]="SOUTH_EAST",["angles"]="aqaawaa"},
-    [5] = {["startDir"]="SOUTH_EAST",["angles"]="aqaaq"},
-    [6] = {["startDir"]="SOUTH_EAST",["angles"]="aqaaqw"},
-    [7] = {["startDir"]="SOUTH_EAST",["angles"]="aqaawaq"},
-    [8] = {["startDir"]="SOUTH_EAST",["angles"]="aqaawwaa"},
-    [9] = {["startDir"]="SOUTH_EAST",["angles"]="aqaawaaq"},
-    [10] = {["startDir"]="SOUTH_EAST",["angles"]="aqaaqa"}
+    [0] = {"aqaa"},
+    [1] = {"aqaaw"},
+    [2] = {"aqaawa"},
+    [3] = {"aqaawaw"},
+    [4] = {"aqaawaa"},
+    [5] = {"aqaaq"},
+    [6] = {"aqaaqw"},
+    [7] = {"aqaawaq"},
+    [8] = {"aqaawwaa"},
+    [9] = {"aqaawaaq"},
+    [10] = {"aqaaqa"}
 }
 
 local regMap = {
     [genRegex("([{}>%*%+-=</])")] = (function (cStr)
-        table.insert(hexlist,hexMap[cStr])
+        table.insert(hexlist,genPattern(hexMap[cStr]))
     return true end),
     [genRegex("rm[ ]+(%d+)")] = (function (cStr)
         addRMPattern(cStr)
@@ -138,7 +145,7 @@ local regMap = {
         addNumPattern(tonumber(cStr))
     return true end),
     [genRegex("([%a_]+[%w_]*)")] = (function (cStr)
-        local t = hexMap[cStr]
+        local t = genPattern(hexMap[cStr])
         if t == nil then
             return false
         end
@@ -155,7 +162,7 @@ function addNumPattern(num)
     local oper = 0
     local rem = num > 0 and num or -num
     if num < 0 then
-        table.insert(hexlist,NumMap[0])
+        table.insert(hexlist,genPattern(NumMap[0]))
     end
     repeat
         oper = rem % 10
@@ -166,19 +173,19 @@ function addNumPattern(num)
     rem = 0
     i = len
     while true do
-        table.insert(hexlist,NumMap[stackOpe[i]])
+        table.insert(hexlist,genPattern(NumMap[stackOpe[i]]))
         if(i < len) then
-            table.insert(hexlist,hexMap["+"])
+            table.insert(hexlist,genPattern(hexMap["+"]))
         end
         i = i - 1
         if i < 1 then
             break
         end
-        table.insert(hexlist,NumMap[10])
-        table.insert(hexlist,hexMap["*"])
+        table.insert(hexlist,genPattern(NumMap[10]))
+        table.insert(hexlist,genPattern(hexMap["*"]))
     end
     if num < 0 then
-        table.insert(hexlist,hexMap["-"])
+        table.insert(hexlist,genPattern(hexMap["-"]))
     end
 end
 
@@ -280,6 +287,7 @@ function parseStr(str)
         end
     end
     return true
+
 end
 
 function mainloop()
@@ -288,9 +296,9 @@ function mainloop()
         if(fPort ~= nil) then
             fPort.writeIota(hexlist)
         end
-        -- print("compile success")
+        print("compile success")
     else 
-        -- print("compile failed")
+        print("compile failed")
     end
 end
 
