@@ -148,7 +148,7 @@ local regMap = {
         elseif cStr == "}" then
             braceletSum = braceletSum - 1
         end
-        appendHexlist(genPattern(hexMap[cStr]))
+        appendHexlist(genPattern(symbolMap[cStr]))
     return true end),
     [genRegex("rm[ ]+(%d+)")] = (function (cStr)
         addRMPattern(cStr)
@@ -168,39 +168,17 @@ local regMap = {
     
     
 }
--- 其他iota的处理都在这里
-function addOtherIota(cStr, needEscape)
-    local outIota = nil
-   
-    -- 数字
-    if string.match(cStr,"^([%d.]+)$") then 
-        local num = string.match(cStr,"([%d.]+)")
-        outIota = tonumber(num)
-    -- 矢量
-    elseif string.match(cStr,"^%([\t ]*([%d]+)[\t ]*,[\t ]*([%d]+)[\t ]*,[\t ]*([%d]+)[\t ]*%)$") then
-        local x,y,z = string.match(cStr,"%([\t ]*([%d]+)[\t ]*,[\t ]*([%d]+)[\t ]*,[\t ]*([%d]+)[\t ]*%)")
-        outIota = {x = tonumber(x),y = tonumber(y),z = tonumber(z)}
-    end 
-    if outIota ~= nil then
-        if needEscape and braceletSum > 0 then
-            addEscape()
-        end
-        appendHexlist(outIota)
-        return true
-    end
-    return false
-end
 
 function addOtherIota(cStr, needEscape)
     local outIota = nil
    
     
-    if string.match(cStr,"^([%d.]+)$") then 
-        local num = string.match(cStr,"([%d.]+)")
+    if string.match(cStr,"^(-?[%d.]+)$") then 
+        local num = string.match(cStr,"(-?[%d.]+)")
         outIota = tonumber(num)
     
-    elseif string.match(cStr,"^%([\t ]*([%d]+)[\t ]*,[\t ]*([%d]+)[\t ]*,[\t ]*([%d]+)[\t ]*%)$") then
-        local x,y,z = string.match(cStr,"%([\t ]*([%d]+)[\t ]*,[\t ]*([%d]+)[\t ]*,[\t ]*([%d]+)[\t ]*%)")
+    elseif string.match(cStr,"^%([\t ]*(-?[%d.]+)[\t ]*,[\t ]*(-?[%d.]+)[\t ]*,[\t ]*(-?[%d.]+)[\t ]*%)$") then
+        local x,y,z = string.match(cStr,"%([\t ]*(-?[%d.]+)[\t ]*,[\t ]*(-?[%d.]+)[\t ]*,[\t ]*(-?[%d.]+)[\t ]*%)")
         outIota = {x = tonumber(x),y = tonumber(y),z = tonumber(z)}
     end 
     if outIota ~= nil then
@@ -324,7 +302,7 @@ function parseStr(str)
                 syntaxFlag = false
                 break
             end
-            -- 添加函数体
+            
             if(funcKey ~= nil) then
                 funcstr = funcstr..cut.."\n"
                 break

@@ -22,10 +22,20 @@ function downloadFolder(url)
     data.close()
 end
 for _, file in pairs(files) do
-    download(file,remoteroot .. file)
-    print("download "..file.." success")
+    repeat
+        if file == "hexMap" then
+            if fs.exists(file) then
+                term.setTextColor(colors.red)
+                print("hexMap is exist")
+                term.setTextColor(colors.white)
+                break
+            end
+        end
+        download(file,remoteroot .. file)
+        print("download "..file.." success")
+    until true
 end
 term.setTextColor(colors.lime)
-print("all file download success!")
+print("all file download success!, reboot in 2s")
 sleep(2)
 os.reboot()

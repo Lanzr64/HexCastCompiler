@@ -20,8 +20,9 @@ if cmd == nil then
     print("Usage: " .. programName .. " <cmd> [Param]")
     print("cmd can be :")
     tipWriter("toStr", " get focal_port iota to string and save in \"data\" file")
-    tipWriter("dec", " get focal_port iota and decompile code based on hexMap and store it in \"dec_out\" file ")
-    tipWriter("append", " get focal_port iota and Generate mappings that are not included in the hexMap, store the results in a \"newHexMap\" file, and if append parameter \"overWrite\", the hexMap will be overwritten ")
+    tipWriter("dec", " get focal_port iota and decompile code based on patMap and store it in \"dec_out\" file ")
+    tipWriter("view", " Read the mapping patterns from patMap and draw a preview. ")
+    tipWriter("append", " Used to read iotas from the forcal port and add them to the hexMap. ")
     return
 end
 -- patch hexview

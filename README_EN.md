@@ -2,6 +2,8 @@
 English | [Chinese](README.md)
 
 a  compiler for Minecraft mod Ducky periperals and hex casting, use in game
+## Quick Start
+[jump to turtorial](TUTORIAL.md)
 
 ## files
 

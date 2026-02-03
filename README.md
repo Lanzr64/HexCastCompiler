@@ -3,6 +3,9 @@ Chinese | [Engligh](README_EN.md)
 
 一个用于Minecraft模组Ducky periperals和Hex Casting的编译器，可在游戏内使用。
 
+## 快速入门
+[点此查看教程](TUTORIAL.md)
+
 ## 文件说明
 
 1. hexMap  
@@ -13,7 +16,7 @@ Chinese | [Engligh](README_EN.md)
    使用方法：`hex <法术文件>`
 
 3. hedit.lua  
-   游戏内编辑器，用于编辑十六进制代码（即基于hexMap使用的代码）
+   游戏内编辑器，用于编辑hex文件（即基于hexMap使用的代码）
 
 4. iotaTools.lua  
    用于辅助完善hexMap和反编译的工具  

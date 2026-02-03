@@ -10,6 +10,7 @@ hexMap = { -- add pattern table to this tables
     ["rayCast_getEntity"] = "weaqa",
     ["rayCast_getBlock"] = "wqaawdd",
     ["rayCast_getBlockRule"] = "weddwaa",
+    -- Do not modify the following definitions.
     ["{"] = "qqq",
     ["}"] = "eee",
     ["+"] = "waaw",
@@ -22,7 +23,7 @@ rawMap = { -- add raw iota table to this tables
 }
 
 preMap = {
-    ["include"] = genRegex("@include[ ]+([%w_]+)"),
+    ["include"] = genRegex("@include[ ]+([/.%w_]+)"),
     ["func"] = genRegex("@func[ ]+([%w_]+[\t ]*%(.*%))"),
     ["end"] = genRegex("@end"),
 }
