@@ -1,6 +1,6 @@
 **因为真的不想去记那些图案的名字，加上服务器常驻CC，所以就有了这个编译器**
 
-使用该编译器的前提是，需要安装 [cc:tweak]([CC: Tweaked - Minecraft Mod](https://modrinth.com/mod/cc-tweaked)) 和 [hexCasting]([Hex Casting - Minecraft Mod](https://modrinth.com/mod/hex-casting)) 以及 [ducky-periphs]([Ducky Peripherals - Minecraft Mod](https://modrinth.com/mod/ducky-periphs)) 三个mod，其中 `cc:tweak` 这个mod，简称 CC
+使用该编译器的前提是，需要安装 [cc:tweak](https://modrinth.com/mod/cc-tweaked) 和 [hexCasting](https://modrinth.com/mod/hex-casting) 以及 [ducky-periphs](https://modrinth.com/mod/ducky-periphs) 三个mod，其中 `cc:tweak` 这个mod，简称 CC
 
 - 下文中，如果提到核心端口，那么指的就是 `ducky-periphs` 中的 `focal port` 方块
 - 如果没有特别说明，那么一切操作都是在 CC 的计算机中进行的，
