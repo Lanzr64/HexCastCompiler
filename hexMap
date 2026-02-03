@@ -1,14 +1,8 @@
 --[[ 
     this file is use to provide mapping tables for other tools
-]]  
+]] 
 function genRegex(str) return "^[\t ]*"..str.."[\t ]*\r?$" end
 
-preMap = {
-    ["include"] = genRegex("@include[ ]+([%w_]+)"),
-    ["func"] = genRegex("@func[ ]+([%w_]+[\t ]*%(.*%))"),
-    ["end"] = genRegex("@end"),
-
-}
 hexMap = { -- add pattern table to this tables
     ["me"] = "qaq", -- Mind's Reflection
     ["pos"] = "aa", -- Compass' Purification
@@ -25,4 +19,10 @@ hexMap = { -- add pattern table to this tables
 }
 rawMap = { -- add raw iota table to this tables
     ["demopos_"] = {["y"]=68.620000004768,["x"]=-89.37155533412,["z"]=-185.44644438205},
+}
+
+preMap = {
+    ["include"] = genRegex("@include[ ]+([%w_]+)"),
+    ["func"] = genRegex("@func[ ]+([%w_]+[\t ]*%(.*%))"),
+    ["end"] = genRegex("@end"),
 }
