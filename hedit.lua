@@ -39,7 +39,11 @@ local tLines = {}
 local bRunning = true
 
 -- Colours
-local highlightColour, keywordColour, preExpWordColour, commentColour, textColour, bgColour, stringColour, errorColour, funcColour
+local highlightColour, keywordColour, preExpWordColour, 
+    commentColour, textColour, bgColour, 
+    stringColour, errorColour, funcColour,
+    rawMapColour, paramColour
+
 if term.isColour() then
     bgColour = colours.black
     textColour = colours.white
@@ -50,6 +54,8 @@ if term.isColour() then
     commentColour = colours.green
     stringColour = colours.red
     errorColour = colours.red
+    rawMapColour = colours.orange
+    paramColour = colours.lime
 else
     bgColour = colours.black
     textColour = colours.white
@@ -60,6 +66,8 @@ else
     commentColour = colours.white
     stringColour = colours.white
     errorColour = colours.white
+    rawMapColour = colours.white
+    paramColour = colours.white
 end
 
 -- Menus
@@ -154,6 +162,10 @@ local tPreMapWords = {}
 for name,regex in pairs(preMap) do
     tPreMapWords["@"..name] = true
 end
+local tRawMapWords = {}
+for name,regex in pairs(rawMap) do
+    tRawMapWords["%"..name] = true
+end
 local function tryWrite(sLine, regex, colour)
     local match = string.match(sLine, regex)
     if match then
@@ -178,18 +190,26 @@ local function writeHighlighted(sLine)
             tryWrite(sLine, "^\'\'", stringColour) or
             tryWrite(sLine, "^\'.-[^\\]\'", stringColour) or
             tryWrite(sLine, "^%[%[.-%]%]", stringColour) or
-            tryWrite(sLine, "^[%w_]+%(%)", funcColour) or
+            tryWrite(sLine, "^[%w_]+%([%w_,%(%) ]*%)", funcColour) or
+            tryWrite(sLine, "^$[%w_]+", paramColour) or
+            tryWrite(sLine, "^%%[%w_]+", 
+                function(match)
+                    if tRawMapWords[match] then
+                        return rawMapColour
+                    end
+                    return textColour
+                end) or
+            tryWrite(sLine, "^@[%w_]+", 
+                function(match)
+                    if tPreMapWords[match] then
+                        return preExpWordColour
+                    end
+                    return textColour
+                end) or
             tryWrite(sLine, "^[%w_]+", 
                 function(match)
                     if tKeywords[match] then
                         return keywordColour
-                    end
-                    return textColour
-                end) or
-            tryWrite(sLine, "^(@[%w_]+)", 
-                function(match)
-                    if tPreMapWords[match] then
-                        return preExpWordColour
                     end
                     return textColour
                 end) or
@@ -208,17 +228,45 @@ for cmd, iota in pairs(hexMap) do
     end
 end
 
+_rawENV = {}
+for cmd, iota in pairs(rawMap) do
+    _rawENV[cmd] = true
+end
 local tCompleteEnv = _hexENV
+
+-- local function complete(sLine)
+--     if settings.get("edit.autocomplete") then
+--         local nStartPos = string.find(sLine, "[a-zA-Z0-9_%.:]+$")
+--         if nStartPos then
+--             sLine = string.sub(sLine, nStartPos)
+--         end
+--         term.setCursorPos(1,5)
+--         if #sLine > 0 then
+--             return textutils.complete(sLine, tCompleteEnv)
+--         end
+--     end
+--     return nil
+-- end
 local function complete(sLine)
     if settings.get("edit.autocomplete") then
-        local nStartPos = string.find(sLine, "[a-zA-Z0-9_%.:]+$")
+        local nStartPos = string.find(sLine, "[%%a-zA-Z0-9_%.:]+$")
+        
         if nStartPos then
-            sLine = string.sub(sLine, nStartPos)
+            local sCandidate = string.sub(sLine, nStartPos) -- 获取当前正在输入的词
+            
+            -- 2. 判断是否以 @ 开头
+            if string.sub(sCandidate, 1, 1) == "%" then
+                -- 情况 A：是以 @ 开头的输入
+                local sSearch = string.sub(sCandidate, 2) -- 截取 @ 之后的内容进行匹配
+                -- 使用 libA 进行补全
+                return textutils.complete(sSearch, _rawENV)
+            else
+                -- 情况 B：普通输入
+                -- 使用 libB 进行补全
+                return textutils.complete(sCandidate, _hexENV)
+            end
         end
-        term.setCursorPos(1,5)
-        if #sLine > 0 then
-            return textutils.complete(sLine, tCompleteEnv)
-        end
+       
     end
     return nil
 end

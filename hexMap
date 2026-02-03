@@ -1,6 +1,6 @@
 --[[ 
     this file is use to provide mapping tables for other tools
-]]
+]]  
 function genRegex(str) return "^[\t ]*"..str.."[\t ]*\r?$" end
 
 preMap = {
@@ -9,16 +9,20 @@ preMap = {
     ["end"] = genRegex("@end"),
 
 }
-hexMap = {-- add pattern table to this tables
+hexMap = { -- add pattern table to this tables
     ["me"] = "qaq", -- Mind's Reflection
     ["pos"] = "aa", -- Compass' Purification
     ["sight"] = "wa",-- Alidade's Purification
-    ["getEntityHight"] = "awq",  
-    ["unpackList"] = "qwaeawq",
-    ["packList"] = "ewdqdwe",
-    ["packVec"] = "eqqqqq",
-    ["unPackVec"] = "qeeeee",
+    ["rayCast_getEntity"] = "weaqa",
+    ["rayCast_getBlock"] = "wqaawdd",
+    ["rayCast_getBlockRule"] = "weddwaa",
+    ["{"] = "qqq",
+    ["}"] = "eee",
+    ["+"] = "waaw",
+    ["-"] = "wddw",
+    ["*"] = "waqaw",
+    ["/"] = "wdedw",
 }
-rawMap = {
-
+rawMap = { -- add raw iota table to this tables
+    ["demopos_"] = {["y"]=68.620000004768,["x"]=-89.37155533412,["z"]=-185.44644438205},
 }
