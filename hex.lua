@@ -3,7 +3,8 @@
     * need mod : Ducky peripheral
     * author : Lanzr
 ]]
-require("hexMap.lua")
+require("hexMap")
+require("json")
 local completion = require "cc.shell.completion"
 local complete = completion.build(
     completion.file
@@ -34,10 +35,14 @@ local hexlist = {} -- the final table use to output
 
 local funcKey = nil
 local funcMap = {}
+local braceletSum = 0
 
 
 -- ---------------------------
 -- patch
+function appendHexlist(iota)
+    table.insert(hexlist,iota)
+end
 function findAndReplaceLiteral(source_string, target_substring, replacement_substring, num_replacements)
     local escaped_target = string.gsub(target_substring, "([%.%+%-%*%?%^%$%(%)%[%]%{}])", "%%%1")
     local new_string, count = string.gsub(
@@ -51,7 +56,6 @@ function findAndReplaceLiteral(source_string, target_substring, replacement_subs
 
     return new_string, count
 end
-
 
 function parseFuncDefine(funcstr)
     local start1, end1 = string.find(funcstr,"^[\t ]*@func[ ]+([%w_]+)[\t ]*%(([%w,_ \t]*)%)[\t ]*\r?\n")
@@ -118,25 +122,35 @@ end
 function genPattern(angle)
     return {["startDir"]="East",["angles"]=angle}
 end
+
+function addEscape()
+    p_esc = genPattern("qqqaw")
+    appendHexlist(p_esc)
+end
 -- ---------------------------
 
 NumMap = {
-    [0] = {"aqaa"},
-    [1] = {"aqaaw"},
-    [2] = {"aqaawa"},
-    [3] = {"aqaawaw"},
-    [4] = {"aqaawaa"},
-    [5] = {"aqaaq"},
-    [6] = {"aqaaqw"},
-    [7] = {"aqaawaq"},
-    [8] = {"aqaawwaa"},
-    [9] = {"aqaawaaq"},
-    [10] = {"aqaaqa"}
+    [0] = "aqaa",
+    [1] = "aqaaw",
+    [2] = "aqaawa",
+    [3] = "aqaawaw",
+    [4] = "aqaawaa",
+    [5] = "aqaaq",
+    [6] = "aqaaqw",
+    [7] = "aqaawaq",
+    [8] = "aqaawwaa",
+    [9] = "aqaawaaq",
+    [10] = "aqaaqa"
 }
 
 local regMap = {
     [genRegex("([{}>%*%+-=</])")] = (function (cStr)
-        table.insert(hexlist,genPattern(hexMap[cStr]))
+        if cStr == "{" then
+            braceletSum = braceletSum + 1
+        elseif cStr == "}" then
+            braceletSum = braceletSum - 1
+        end
+        appendHexlist(genPattern(hexMap[cStr]))
     return true end),
     [genRegex("rm[ ]+(%d+)")] = (function (cStr)
         addRMPattern(cStr)
@@ -145,16 +159,39 @@ local regMap = {
         addNumPattern(tonumber(cStr))
     return true end),
     [genRegex("([%a_]+[%w_]*)")] = (function (cStr)
-        local t = genPattern(hexMap[cStr])
+        local t = hexMap[cStr]
         if t == nil then
             return false
         end
-        table.insert(hexlist,t)
+        local pt = genPattern(t)
+        appendHexlist(pt)
     return true end),
     -- [genRegex("([%a_]+[%w_]*)%(%)")] = (function (cStr)
     --     parseStr(funcMap[cStr])
     -- return true end)
 }
+-- 其他iota的处理都在这里
+function addOtherIota(cStr, needEscape)
+    local outIota = nil
+   
+    -- 数字
+    if string.match(cStr,"^([%d.]+)$") then 
+        local num = string.match(cStr,"([%d.]+)")
+        outIota = tonumber(num)
+    -- 矢量
+    elseif string.match(cStr,"^%([\t ]*([%d]+)[\t ]*,[\t ]*([%d]+)[\t ]*,[\t ]*([%d]+)[\t ]*%)$") then
+        local x,y,z = string.match(cStr,"%([\t ]*([%d]+)[\t ]*,[\t ]*([%d]+)[\t ]*,[\t ]*([%d]+)[\t ]*%)")
+        outIota = {x = tonumber(x),y = tonumber(y),z = tonumber(z)}
+    end 
+    if outIota ~= nil then
+        if needEscape and braceletSum > 0 then
+            addEscape()
+        end
+        appendHexlist(outIota)
+        return true
+    end
+    return false
+end
 
 function addNumPattern(num)
     local stackOpe = {}
@@ -162,7 +199,7 @@ function addNumPattern(num)
     local oper = 0
     local rem = num > 0 and num or -num
     if num < 0 then
-        table.insert(hexlist,genPattern(NumMap[0]))
+        appendHexlist(genPattern(hexMap[0]))
     end
     repeat
         oper = rem % 10
@@ -173,19 +210,19 @@ function addNumPattern(num)
     rem = 0
     i = len
     while true do
-        table.insert(hexlist,genPattern(NumMap[stackOpe[i]]))
+        appendHexlist(genPattern(NumMap[stackOpe[i]]))
         if(i < len) then
-            table.insert(hexlist,genPattern(hexMap["+"]))
+            appendHexlist(genPattern(hexMap["+"]))
         end
         i = i - 1
         if i < 1 then
             break
         end
-        table.insert(hexlist,genPattern(NumMap[10]))
-        table.insert(hexlist,genPattern(hexMap["*"]))
+        appendHexlist(genPattern(NumMap[10]))
+        appendHexlist(genPattern(hexMap["*"]))
     end
     if num < 0 then
-        table.insert(hexlist,genPattern(hexMap["-"]))
+        appendHexlist(genPattern(hexMap["-"]))
     end
 end
 
@@ -203,9 +240,18 @@ function addRMPattern(rmPos)
         angleStr = "a"
     end
     rmPattern["angles"] = angleStr
-    table.insert(hexlist,rmPattern)
+    appendHexlist(rmPattern)
 end
- 
+
+function addRawIota(cStr)
+    local t = rawMap[cStr]
+    if t == nil then
+        return false
+    end
+    appendHexlist(t)
+    return true
+end
+
 function parseStr(str)
     local lastIndex = 0
     local index = -1
@@ -233,6 +279,7 @@ function parseStr(str)
             if (string.match(cut,genRegex(""))) then
                 break
             end
+            -- @ 预编译符号
             if (string.match(cut,genRegex("@.*"))) then
                 if (string.match(cut,preMap["include"])) then
                     local cStr = string.match(cut,preMap["include"])
@@ -257,18 +304,40 @@ function parseStr(str)
                 syntaxFlag = false
                 break
             end
-            
+            -- 添加函数体
             if(funcKey ~= nil) then
                 funcstr = funcstr..cut.."\n"
                 break
             end
-
+            -- 函数调用
             if string.match(cut,genRegex("([%a_]+[%w_]*)%((.*)%)")) then
                 retstr = funcInvoke(cut)
                 parseStr(retstr)
                 break
             end
-            -- common regMap
+            -- rawMap
+            if (string.match(cut,genRegex("%%.*"))) then
+                if string.match(cut,genRegex("%%[%a_]+[%w_]*")) then
+                    local cStr = string.match(cut,genRegex("%%([%a_]+[%w_]*)"))
+                    syntaxFlag = addRawIota(cStr)
+                    break
+                end
+                syntaxFlag = false
+                break
+            end
+            -- 非图案iota，此处不转义
+            if (string.match(cut,genRegex("\\\\.*"))) then
+                local cStr = string.match(cut,genRegex("\\\\(.*)"))
+                syntaxFlag = addOtherIota(cStr,true)
+                break
+            -- 非图案iota 此处转义
+            elseif (string.match(cut,genRegex("\\.*"))) then
+                local cStr = string.match(cut,genRegex("\\(.*)"))
+                syntaxFlag = addOtherIota(cStr,false)
+                break
+            end
+            -- 普通的方法映射（无优先级）
+            -- common regMap 
             for key, cb in pairs(regMap) do
                 if (string.match(cut,key)~= nil) then
                     local cStr = string.match(cut,key)
@@ -296,9 +365,6 @@ function mainloop()
         if(fPort ~= nil) then
             fPort.writeIota(hexlist)
         end
-        print("compile success")
-    else 
-        print("compile failed")
     end
 end
 
