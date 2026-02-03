@@ -25,3 +25,7 @@ for _, file in pairs(files) do
     download(file,remoteroot .. file)
     print("download "..file.." success")
 end
+term.setTextColor(colors.lime)
+print("all file download success!")
+sleep(2)
+os.reboot()
