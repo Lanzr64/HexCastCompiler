@@ -269,7 +269,7 @@ tools.hex
 tst.hex
 ```r
 # 导入包
-@include tools
+@include tools.hex
  
 # 直接调用包中函数
 getblockpos()
