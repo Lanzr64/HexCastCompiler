@@ -148,7 +148,7 @@ local regMap = {
         elseif cStr == "}" then
             braceletSum = braceletSum - 1
         end
-        appendHexlist(genPattern(symbolMap[cStr]))
+        appendHexlist(genPattern(hexMap[cStr]))
     return true end),
     [genRegex("rm[ ]+(%d+)")] = (function (cStr)
         addRMPattern(cStr)
