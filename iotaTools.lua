@@ -515,18 +515,17 @@ end
 
 local function insert_data(filename, pos, text)
     
-    local f = io.open(filename, "r+")
+    local f = io.open(filename, "rb")
     if not f then return nil end
-
-    f:seek("set", pos)
+    local before = f:read(pos)
+    local after = f:read("*a")
     
-    local rest_content = f:read("*a")
+    f:close()
     
-    f:seek("set", pos)
-    
+    local f = io.open(filename, "wb")
+    f:write(before)
     f:write(text)
-    f:write(rest_content)
-    
+    f:write(after)
     f:close()
 end
 function append_pattern()
@@ -581,6 +580,7 @@ function append_pattern()
     insert_data(targetFile, ep, o_str)
     
 end
+
 function append_raw()
     local param2 = arg[3]
     data = dev.readIota()
