@@ -197,7 +197,7 @@ function addNumPattern(num)
     local oper = 0
     local rem = num > 0 and num or -num
     if num < 0 then
-        appendHexlist(genPattern(hexMap[0]))
+        appendHexlist(genPattern(NumMap[0]))
     end
     repeat
         oper = rem % 10
