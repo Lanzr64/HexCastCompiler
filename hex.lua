@@ -173,12 +173,12 @@ local regMap = {
 
 function addOtherIota(cStr)
     local outIota = nil
-    if string.match(cStr,"^(-?[%d.]+)$") then 
-        local num = string.match(cStr,"(-?[%d.]+)")
+    if string.match(cStr,"^(-?[%d%.]+)$") then 
+        local num = string.match(cStr,"(-?[%d%.]+)")
         outIota = tonumber(num)
     
-    elseif string.match(cStr,"^%([\t ]*(-?[%d.]+)[\t ]*,[\t ]*(-?[%d.]+)[\t ]*,[\t ]*(-?[%d.]+)[\t ]*%)$") then
-        local x,y,z = string.match(cStr,"%([\t ]*(-?[%d.]+)[\t ]*,[\t ]*(-?[%d.]+)[\t ]*,[\t ]*(-?[%d.]+)[\t ]*%)")
+    elseif string.match(cStr,"^%([\t ]*(-?[%d%.]+)[\t ]*,[\t ]*(-?[%d%.]+)[\t ]*,[\t ]*(-?[%d%.]+)[\t ]*%)$") then
+        local x,y,z = string.match(cStr,"%([\t ]*(-?[%d%.]+)[\t ]*,[\t ]*(-?[%d%.]+)[\t ]*,[\t ]*(-?[%d%.]+)[\t ]*%)")
         outIota = {x = tonumber(x),y = tonumber(y),z = tonumber(z)}
     end 
     if outIota ~= nil then
@@ -313,12 +313,14 @@ function parseStr(str)
             end
             if (string.match(cut,genRegex("%%.*"))) then
                 local cStr = cut
-                if (string.match(cStr,genRegex("%%%%[%w_.-%,%(%)]*"))) then
-                    cStr = string.match(cStr,genRegex("%%%%([%w_.-%,%(%)]*)"))
-                elseif (string.match(cStr,genRegex("%%[%w_.-%,%(%)]*"))) then
+                regex = "[%w._,%(%)-]*"
+                if (string.match(cStr,genRegex("%%%%"..regex))) then
+                    cStr = string.match(cStr,genRegex("%%%%("..regex..")"))
+                elseif (string.match(cStr,genRegex("%%"..regex))) then
                     escapeFlag = true
-                    cStr = string.match(cStr,genRegex("%%([%w_.-%,%(%)]*)"))
+                    cStr = string.match(cStr,genRegex("%%("..regex..")"))
                 else 
+                    print("quit")
                     syntaxFlag = false
                     break
                 end
@@ -330,7 +332,7 @@ function parseStr(str)
                     syntaxFlag = addRawIota(cStr)
                     break
                 else
-                    local cStr = string.match(cStr,genRegex("([%d.-%,%(%)]+)"))
+                    local cStr = string.match(cStr,genRegex("([%d%.-%,%(%)]+)"))
                     syntaxFlag = addOtherIota(cStr)
                     break
                 end
@@ -389,3 +391,4 @@ function mainloop()
 end
 
 mainloop()
+ 
