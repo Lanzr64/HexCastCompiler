@@ -192,6 +192,13 @@ local function writeHighlighted(sLine)
             tryWrite(sLine, "^%[%[.-%]%]", stringColour) or
             tryWrite(sLine, "^[%w_]+%([%w_,%(%) ]*%)", funcColour) or
             tryWrite(sLine, "^$[%w_]+", paramColour) or
+            tryWrite(sLine, "^%%%%[%w_]+", 
+                function(match)
+                    if tRawMapWords[string.sub(match, 2)] then
+                        return rawMapColour
+                    end
+                    return textColour
+                end) or
             tryWrite(sLine, "^%%[%w_]+", 
                 function(match)
                     if tRawMapWords[match] then
@@ -232,7 +239,6 @@ _rawENV = {}
 for cmd, iota in pairs(rawMap) do
     _rawENV[cmd] = true
 end
-local tCompleteEnv = _hexENV
 
 -- local function complete(sLine)
 --     if settings.get("edit.autocomplete") then
@@ -256,10 +262,13 @@ local function complete(sLine)
             
             -- 2. 判断是否以 @ 开头
             if string.sub(sCandidate, 1, 1) == "%" then
-                -- 情况 A：是以 @ 开头的输入
-                local sSearch = string.sub(sCandidate, 2) -- 截取 @ 之后的内容进行匹配
-                -- 使用 libA 进行补全
-                return textutils.complete(sSearch, _rawENV)
+                if string.sub(sCandidate, 2, 2) == "%" then
+                    local sSearch = string.sub(sCandidate, 3) -- 截取 @ 之后的内容进行匹配
+                    return textutils.complete(sSearch, _rawENV)
+                else
+                    local sSearch = string.sub(sCandidate, 2) -- 截取 @ 之后的内容进行匹配
+                    return textutils.complete(sSearch, _rawENV)
+                end
             else
                 -- 情况 B：普通输入
                 -- 使用 libB 进行补全

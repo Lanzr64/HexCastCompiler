@@ -29,18 +29,20 @@ local fPort = peripheral.find("focal_port")
 local lastIndex = 0
 local index = -1
 local leftBrackIndex = nil
-
-local hexlist = {} 
+local hexList = {}
+local currentHexlist = hexList 
+local hexListStack = {}
 
 local funcKey = nil
 local funcMap = {}
 local braceletSum = 0
+local listBraceLetSum = 0
 
 
 
 
 function appendHexlist(iota)
-    table.insert(hexlist,iota)
+    table.insert(currentHexlist,iota)
 end
 function findAndReplaceLiteral(source_string, target_substring, replacement_substring, num_replacements)
     local escaped_target = string.gsub(target_substring, "([%.%+%-%*%?%^%$%(%)%[%]%{}])", "%%%1")
@@ -169,10 +171,8 @@ local regMap = {
     
 }
 
-function addOtherIota(cStr, needEscape)
+function addOtherIota(cStr)
     local outIota = nil
-   
-    
     if string.match(cStr,"^(-?[%d.]+)$") then 
         local num = string.match(cStr,"(-?[%d.]+)")
         outIota = tonumber(num)
@@ -182,9 +182,6 @@ function addOtherIota(cStr, needEscape)
         outIota = {x = tonumber(x),y = tonumber(y),z = tonumber(z)}
     end 
     if outIota ~= nil then
-        if needEscape and braceletSum > 0 then
-            addEscape()
-        end
         appendHexlist(outIota)
         return true
     end
@@ -257,7 +254,8 @@ function parseStr(str)
     local lineIndex = 0
     local funcstr = ""
     while ( index ~= nil ) do
-        local syntaxFlag = true;
+        local syntaxFlag = true
+        local escapeFlag = false
         lineIndex = lineIndex + 1
         index = string.find(str,"\n", index + 1);
         if( index ~= nil) then
@@ -313,28 +311,48 @@ function parseStr(str)
                 parseStr(retstr)
                 break
             end
-            
             if (string.match(cut,genRegex("%%.*"))) then
-                if string.match(cut,genRegex("%%[%a_]+[%w_]*")) then
-                    local cStr = string.match(cut,genRegex("%%([%a_]+[%w_]*)"))
+                local cStr = cut
+                if (string.match(cStr,genRegex("%%%%[%w_.-%,%(%)]*"))) then
+                    cStr = string.match(cStr,genRegex("%%%%([%w_.-%,%(%)]*)"))
+                elseif (string.match(cStr,genRegex("%%[%w_.-%,%(%)]*"))) then
+                    escapeFlag = true
+                    cStr = string.match(cStr,genRegex("%%([%w_.-%,%(%)]*)"))
+                else 
+                    syntaxFlag = false
+                    break
+                end
+                if escapeFlag then
+                    addEscape()
+                end
+                if string.match(cStr,genRegex("[%a_]+[%w_]*")) then
+                    local cStr = string.match(cStr,genRegex("([%a_]+[%w_]*)"))
                     syntaxFlag = addRawIota(cStr)
+                    break
+                else
+                    local cStr = string.match(cStr,genRegex("([%d.-%,%(%)]+)"))
+                    syntaxFlag = addOtherIota(cStr)
                     break
                 end
                 syntaxFlag = false
                 break
             end
-            
-            if (string.match(cut,genRegex("\\\\.*"))) then
-                local cStr = string.match(cut,genRegex("\\\\(.*)"))
-                syntaxFlag = addOtherIota(cStr,true)
+            if (string.match(cut,genRegex("%["))) then
+                listBraceLetSum = listBraceLetSum + 1
+                addEscape()
+                hexListStack[listBraceLetSum] = currentHexlist
+                currentHexlist = {}
                 break
-            
-            elseif (string.match(cut,genRegex("\\.*"))) then
-                local cStr = string.match(cut,genRegex("\\(.*)"))
-                syntaxFlag = addOtherIota(cStr,false)
+            elseif (string.match(cut,genRegex("%]"))) then
+                listBraceLetSum = listBraceLetSum - 1
+                if (listBraceLetSum < 0) then
+                    print("Line : "..cut.." is open brace error")
+                    return false
+                end
+                table.insert(hexListStack[listBraceLetSum+1], currentHexlist)
+                currentHexlist = hexListStack[listBraceLetSum+1]
                 break
             end
-            
             
             for key, cb in pairs(regMap) do
                 if (string.match(cut,key)~= nil) then
@@ -360,11 +378,14 @@ end
 function mainloop()
     ret = parseStr(codeStr)
     if ret then
+        if listBraceLetSum ~= 0 then
+            print("not all braces are closed")
+            return false
+        end
         if(fPort ~= nil) then
-            fPort.writeIota(hexlist)
+            fPort.writeIota(currentHexlist)
         end
     end
 end
 
 mainloop()
- 
