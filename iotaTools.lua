@@ -25,21 +25,21 @@ if cmd == nil then
     tipWriter("append", " Used to read iotas from the forcal port and add them to the hexMap. ")
     return
 end
--- patch hexview
--- 功能：逐步绘制动画 + 实时自由视角
+
+
 function hexView(pattern)
     local pathData = "w"..pattern.."w"
-    -- === 1. 配置参数 ===
-    local RADIUS = 4          -- 六边形大小
-    local MOVE_STEP = 8       -- 按键移动速度
-    local ANIM_SPEED = 0.2   -- 动画速度 (秒/步)
-    -- 颜色配置
+    
+    local RADIUS = 4          
+    local MOVE_STEP = 8       
+    local ANIM_SPEED = 0.2   
+    
     local C_BG    = colors.black
     local C_LINE  = colors.cyan
     local C_NODE  = colors.blue
-    local C_HEAD  = colors.white -- 当前正在画的那个头节点
+    local C_HEAD  = colors.white 
     local C_START = colors.red
-    -- === 2. 核心数学 ===
+    
     local DIRECTIONS = {
         {1, 0}, {0, 1}, {-1, 1}, {-1, 0}, {0, -1}, {1, -1}
     }
@@ -51,13 +51,13 @@ function hexView(pattern)
         local y = (3/2 * r) * RADIUS
         return math.floor(x), math.floor(y)
     end
-    -- === 3. 数据预计算 (Model) ===
-    -- 即使我们要逐步画，也最好先算好所有坐标，这样效率最高
+    
+    
     local function generate_path_points(data)
         local points = {}
         local q, r = 0, 0
-        local dir_idx = 0 -- 0=东
-        -- 起点
+        local dir_idx = 0 
+        
         local sx, sy = hex_to_rel_pixel(0, 0)
         table.insert(points, {x = sx, y = sy})
         for i = 1, #data do
@@ -75,13 +75,13 @@ function hexView(pattern)
         end
         return points
     end
-    -- === 4. 渲染函数 (View) ===
-    -- 参数：所有点，当前画到了第几个点，摄像机偏移
+    
+    
     local function draw_scene(points, progress_index, cam_x, cam_y)
         local ret = true
         term.setBackgroundColor(C_BG)
         term.clear()
-        -- 1. 绘制UI提示
+        
         term.setCursorPos(1, 1)
         term.setTextColor(colors.gray)
         local pl = #points -1
@@ -90,8 +90,8 @@ function hexView(pattern)
         else
             ret = false
         end
-        -- 2. 绘制路径 (只画到 progress_index 为止)
-        -- 为了性能，如果点非常多，可以只绘制屏幕范围内的线，但这里暂且全部绘制
+        
+        
         for i = 1, progress_index - 1 do
             local p1 = points[i]
             local p2 = points[i+1]
@@ -100,44 +100,44 @@ function hexView(pattern)
             paintutils.drawLine(x1, y1, x2, y2, C_LINE)
             paintutils.drawPixel(x1, y1, C_NODE)
         end
-        -- 3. 绘制特殊的点
+        
         if progress_index >= 1 then
-            -- 起点
+            
             local start = points[1]
             paintutils.drawPixel(start.x + cam_x, start.y + cam_y, C_START)
-            -- 当前的头节点 (动画的先锋)
+            
             local head = points[progress_index]
             paintutils.drawPixel(head.x + cam_x, head.y + cam_y, C_HEAD)
         end
         return ret
     end
-    -- === 5. 主循环 (Controller) ===
+    
     local function main()
         local all_points = generate_path_points(pathData)
         local w, h = term.getSize()
-        local cam_x = math.floor(w/2) -- 摄像机X
-        local cam_y = math.floor(h/2) -- 摄像机Y
+        local cam_x = math.floor(w/2) 
+        local cam_y = math.floor(h/2) 
         while true do
-            -- 状态变量
-            local current_step = 1       -- 当前画到第几步
+            
+            local current_step = 1       
             local running = true
             local stopFlag = false
-            -- 启动第一个计时器
+            
             local anim_timer = os.startTimer(ANIM_SPEED)
-            -- 初始绘制一次
+            
             draw_scene(all_points, current_step, cam_x, cam_y)
             while running do
-                -- 等待任何事件（可能是按键，可能是计时器到期）
+                
                 local event, p1 = os.pullEvent()
                
                 if event == "timer" and p1 == anim_timer then
-                    -- == 动画逻辑 ==
+                    
                     if current_step < #all_points then
                         current_step = current_step + 1
-                        -- 自动跟随视角 (可选：如果你希望镜头一直跟着画笔走，取消下面两行的注释)
-                        -- local head = all_points[current_step]
-                        -- cam_x, cam_y = math.floor(w/2) - head.x, math.floor(h/2) - head.y
-                        -- 设置下一次“闹钟”
+                        
+                        
+                        
+                        
                         anim_timer = os.startTimer(ANIM_SPEED)
                         ret = draw_scene(all_points, current_step, cam_x, cam_y)
                        
@@ -147,7 +147,7 @@ function hexView(pattern)
                         
                     end
                 elseif event == "key" then
-                    -- == 移动逻辑 ==
+                    
                     local key = p1
                     local moved = false
                     if key == keys.q then
@@ -174,14 +174,14 @@ function hexView(pattern)
                         end
                         all_points = generate_path_points(pathData)
                     end
-                    -- 只有移动了才重绘，节省资源
+                    
                     if moved then
                         draw_scene(all_points, current_step, cam_x, cam_y)
                     end
                 end
              
             end
-            -- 退出清理
+            
             term.setCursorPos(1, 1)
             term.setBackgroundColor(colors.black)
             term.setTextColor(colors.white)
@@ -198,11 +198,11 @@ end
 
 function hexView(pattern)
     local pathData = "w"..pattern.."w"
-    -- 配置参数
-    local RADIUS = 4          -- 六边形大小
-    local MOVE_STEP = 8       -- 按键移动速度
-    local ANIM_SPEED = 0.2   -- 动画速度 (秒/步)
-    -- 颜色配置
+    
+    local RADIUS = 4          
+    local MOVE_STEP = 8       
+    local ANIM_SPEED = 0.2   
+    
     local C_BG    = colors.black
     local C_LINE  = colors.cyan
     local C_NODE  = colors.blue

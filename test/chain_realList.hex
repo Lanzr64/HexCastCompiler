@@ -90,7 +90,7 @@
         ]
         true2or3 
         run
-        rm 1
+        rm 1 # 移除栈顶元素
     ]
     readFmem
     %2
