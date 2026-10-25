@@ -1,14 +1,14 @@
 **因为真的不想去记那些图案的名字，加上服务器常驻CC，所以就有了这个编译器**
 
-使用该编译器的前提是，需要安装 [cc:tweak](https://modrinth.com/mod/cc-tweaked) 和 [hexCasting](https://modrinth.com/mod/hex-casting) 以及 [ducky-periphs](https://modrinth.com/mod/ducky-periphs) 三个mod，其中 `cc:tweak` 这个mod，简称 CC
+使用本分支的前提是服务端安装 [CC:Tweaked](https://modrinth.com/mod/cc-tweaked)、[Hex Casting](https://modrinth.com/mod/hex-casting) 和 `cc_hex_plugin`。客户端按服务器要求安装前两个 mod。其中 CC:Tweaked 简称 CC。
 
-- 下文中，如果提到核心端口，那么指的就是 `ducky-periphs` 中的 `focal port` 方块
+- 下文旧称“核心端口”的地方，在本分支指 `hccConfig.lua` 中配置的库存外设名与槽位。配置示例：`return { inventoryName = "left", slot = 1 }`。电脑可用 `peripheral.getNames()` 查看外设名，槽位从 1 开始，目标槽位应放入可写 Iota 的物品。
 - 如果没有特别说明，那么一切操作都是在 CC 的计算机中进行的，
 
 # 下载器
 
-`HCCDownloader.lua` 可以直接下载github上最新的程序文件，包括 `hex.lua`, `hexMap`,`iotaTools`, `hedit.lua` `startup.lua`。
-只需要下载下来运行它一次即可，它会检查本地有没有 `hexMap` 文件，如果有则不会下载 `hexMap`，但是其他文件不会进行类似检查
+`HCCDownloader.lua` 下载本分支的程序文件，包括 `hex.lua`、`hexMap`、`iotaTools.lua`、`iotaBridge.lua`、`hccConfig.lua`、`hedit.lua` 和 `startup.lua`。
+只需要下载下来运行它一次即可；若本地已有 `hexMap` 或 `hccConfig.lua`，下载器不会覆盖，其他文件会更新。
 
 # 程序说明
 
@@ -35,27 +35,27 @@ hexMap 相当于一个库，用于存储多个文件可能需要公用的部份�
 
 编译器本体，使用方式为：`hex <文件名>`
 
-如果有核心端口连接至此计算机，那么编译结果会输入到核心端口中的核心之中
+编译结果会写入 `hccConfig.lua` 指定的库存外设槽位中的 Iota 物品。
 
 ## hedit.lua
 
 为该编译器调整的cc文本编辑器，使用方式为：`hedit <文件名>`
 
 可以提供对应关键字的高亮，以及 `rawMap` 和 `hexMap` 的关键字补全
-如果有核心端口连接至此计算机那么按下ctrl后，选项中会出现 `Compile`，选择确认会将编辑器打开的代码编译入核心端口中的核心之中
+当配置的库存外设可用时，按下 Ctrl 后选项中会出现 `Compile`；选择确认后会将编辑器打开的代码编译并写入配置的槽位。
 
 ## iotaTools
 
 用来辅助操作hexMap的四合一工具  使用方法：`iotaTools <命令> [参数1,参数2,..]`  
 
 可选命令：
-- `toStr`：将 核心端口 中的 iota 转为字符串并保存至 `_toStr_out` 文件  
-- `dec`：根据 `hexMap` 对 核心端口 的 iota 进行反编译，结果存入 `_dec_out` 文件  
+- `toStr`：将配置槽位中的 Iota 转为字符串并保存至 `_toStr_out` 文件
+- `dec`：根据 `hexMap` 对配置槽位中的 Iota 进行反编译，结果存入 `_dec_out` 文件
 - `append`：用来为 `hexMap` 插入新数据的工具
-	- 如果不带参数使用，那么需要 核心端口 中是图案，或者图案列表，不能有其他的iota，会将 `hexMap` 中没有的映射记录，随后弹出ui，根据核心中列表的顺序依此让你输入你希望的键名，输入完成后会插入到 `hexMap` 的最上面
+	- 如果不带参数使用，那么配置槽位中的 Iota 需要是图案或图案列表；未映射的图案会弹出输入界面，按列表顺序输入键名后插入到 `hexMap` 顶部
 	- 如果 `参数1` 是 `pattern`，那么和无参数一样
-	- 如果 `参数1` 是 `raw` 且没有 `参数2` ，那么会将核心中的 iota 认为是一整个iota，将会弹出ui，让你输入你希望的键名，输入完成后会插入到 `rawMap` 的最上面
-	- 如果 `参数1` 是 `raw` 且 `参数2` 是 `list` ,那么会将核心中的 iota 认为是iota列表，将会弹出ui，根据核心中列表的顺序依此依此让你输入你希望的键名，输入完成后会插入到 `rawMap` 的最上面
+	- 如果 `参数1` 是 `raw` 且没有 `参数2`，将整个 Iota 作为一项加入 `rawMap`
+	- 如果 `参数1` 是 `raw` 且 `参数2` 是 `list`，将列表中的 Iota 逐项加入 `rawMap`
 - `view` : `参数1` 需要输入 `hexMap` 中存在键值，会在屏幕上反复绘制图案以让用户检查具体是什么图案或者画法，按下 `R` 可以立即重绘， 方向键可以移动相机位置，`pgDown` 缩小图像尺寸，`pgUp`放达图像尺寸，`Q`结束绘制
 
 ## startup.lua
@@ -137,7 +137,7 @@ rayCast_getEntity
 ```
 如果使用 `hexMap` 中不存在的键，那么编译就会报错
 
-如果编译成功，那么对应的关键字就会被替换成对应的图案Iota，随后存入核心端口中的核心中。下面的一些语法的运行逻辑也类似图案的替换逻辑
+如果编译成功，对应关键字会被替换成图案 Iota，随后写入配置的库存槽位。下面的一些语法也采用类似的图案替换逻辑。
 
 ### 图案版数字
 

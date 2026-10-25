@@ -1,12 +1,12 @@
 --[[
-    * this tools is read iota from focal_port to string
+    * this tools reads Iota from the configured inventory slot
     * if specify argument "dec" will be decompilation iota to hex code
     * author : Lanzr
 ]]
 require("hexMap")
 
 local cmd = arg[1]
-local dev = peripheral.find("focal_port")
+local dev = require("iotaBridge")
 
 local function tipWriter(left,right)
     term.setTextColor(colors.orange)
@@ -19,10 +19,10 @@ if cmd == nil then
     local programName = arg[0] or fs.getName(shell.getRunningProgram())
     print("Usage: " .. programName .. " <cmd> [Param]")
     print("cmd can be :")
-    tipWriter("toStr", " get focal_port iota to string and save in \"data\" file")
-    tipWriter("dec", " get focal_port iota and decompile code based on patMap and store it in \"dec_out\" file ")
+    tipWriter("toStr", " get configured slot Iota to string and save in \"data\" file")
+    tipWriter("dec", " get configured slot Iota and decompile code based on patMap and store it in \"dec_out\" file ")
     tipWriter("view", " Read the mapping patterns from patMap and draw a preview. ")
-    tipWriter("append", " Used to read iotas from the forcal port and add them to the hexMap. ")
+    tipWriter("append", " Read Iotas from the configured slot and add them to hexMap. ")
     return
 end
 

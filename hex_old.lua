@@ -1,6 +1,6 @@
 --[[
     * a  mineCraft HexCasting Mod Compiler, can compile the hCode in game and output to the focus
-    * need mod : Ducky peripheral
+    * need mod : cc_hex_plugin (server)
     * author : Lanzr
 ]]
 require("hexMap")
@@ -24,7 +24,7 @@ local inf = io.open(path,"r") -- the source_code filename
 local codeStr = inf.read(inf,"*all")
 inf.close(inf)
 
-local fPort = peripheral.find("focal_port")
+local iotaBridge = require("iotaBridge")
 
 local lastIndex = 0
 local index = -1
@@ -183,10 +183,8 @@ function parseStr(str)
     end
 
     -- out put final hexlist    
-    if(fPort ~= nil) then
-        fPort.writeIota(hexlist)
-        return
-    end
+    iotaBridge.writeIota(hexlist)
+    return
 end
 
 function mainloop()
@@ -194,4 +192,3 @@ function mainloop()
 end
 
 mainloop()
- 

@@ -77,7 +77,7 @@ local tMenuItems = {}
 if not bReadOnly then
     table.insert(tMenuItems, "Save")
 end
-if peripheral.find("focal_port") then
+if require("iotaBridge").isAvailable() then
     table.insert(tMenuItems, "Compile")
 end
 if peripheral.find("printer") then

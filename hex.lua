@@ -1,6 +1,6 @@
 --[[
     * a  mineCraft HexCasting Mod Compiler, can compile the hCode in game and output to the focus
-    * need mod : Ducky peripheral
+    * need mod : cc_hex_plugin (server)
     * author : Lanzr
 ]]
 require("hexMap")
@@ -24,7 +24,7 @@ local inf = io.open(path,"r")
 local codeStr = inf.read(inf,"*all")
 inf.close(inf)
 
-local fPort = peripheral.find("focal_port")
+local iotaBridge = require("iotaBridge")
 
 local lastIndex = 0
 local index = -1
@@ -384,11 +384,8 @@ function mainloop()
             print("not all braces are closed")
             return false
         end
-        if(fPort ~= nil) then
-            fPort.writeIota(currentHexlist)
-        end
+        iotaBridge.writeIota(currentHexlist)
     end
 end
 
 mainloop()
- 

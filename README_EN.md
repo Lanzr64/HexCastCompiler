@@ -1,7 +1,15 @@
 # HexCastCompiler
 English | [Chinese](README.md)
 
-a  compiler for Minecraft mod Ducky periperals and hex casting, use in game
+An in-game Hex Casting compiler for CC:Tweaked. This branch uses the server-side `cc_hex_plugin` global `hexIota` API to read and write an Iota item in a named inventory peripheral. It does not require Ducky Peripherals or a focal port.
+
+Install CC:Tweaked, Hex Casting, and `cc_hex_plugin` on the server. Edit `hccConfig.lua` with an inventory name from `peripheral.getNames()` and a one-based slot number:
+
+```lua
+return { inventoryName = "minecraft:chest_0", slot = 3 }
+```
+
+The slot must contain a writable Iota item. `iotaBridge.lua` converts the compiler's Lua values to Hex Casting SNBT. The downloader preserves an existing `hccConfig.lua`.
 ## Quick Start
 [jump to turtorial](TUTORIAL.md)
 
@@ -18,9 +26,9 @@ a  compiler for Minecraft mod Ducky periperals and hex casting, use in game
    the helpful tool for complete hexMap and decompilation
     `Usage: iotaTools <cmd> [Param]`
     cmd can be :
-    - `toStr`:  get `focal_port` iota to string and save in `data` file
-    - `dec`:  get `focal_port` iota and decompile code based on hexMap and store it in `dec_out` file 
-    - `append`:  get `focal_port` iota and Generate mappings that are not included in the `hexMap`, store the results in a `newHexMap` file, and if append parameter `overWrite`, the `hexMap` will be overwritten
+    - `toStr`: save the configured slot's Iota as `_toStr_out`
+    - `dec`: decompile a pattern list from the configured slot to `_dec_out`
+    - `append`: add patterns or raw Iotas read from the configured slot to `hexMap`
    
 5. startup.lua
    the initial script in cc computer lanuch,and provide param completion
