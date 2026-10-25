@@ -11,6 +11,18 @@ return { inventoryName = "top", slot = 1 }
 
 目标槽位必须有可写 Iota 的物品。空槽、错误物品、只读库存等情况会由 `hexIota` 返回错误。写入支持图案、数字、布尔、向量及其列表，和 mod 的安全类型限制一致。
 
+## 单文件离线安装
+
+只需将 [HCCInstaller.lua](HCCInstaller.lua) 传入 CC 电脑，在电脑根目录运行：
+
+```lua
+HCCInstaller
+```
+
+安装器已内嵌 `hex.lua`、`hex_old.lua`、`hedit.lua`、`iotaTools.lua`、`iotaBridge.lua`、`hexMap`、`hccConfig.lua` 和 `startup.lua`，运行时无需 HTTP。也可用 `HCCInstaller <目录>` 指定安装目录。已有的 `hexMap`、`hccConfig.lua` 和 `startup.lua` 会保留；其他同名文件若需要更新，旧版会保存为 `.hcc-backup` 文件。首次安装 `startup.lua` 后重启电脑可启用命令补全；若电脑原本已有 `startup.lua`，安装器不会修改它。
+
+修改运行文件后，可在开发机执行 `node tools/build-installer.js` 重新生成安装器。
+
 ## 快速入门
 [点此查看教程](TUTORIAL.md)
 

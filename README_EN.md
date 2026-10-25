@@ -10,6 +10,10 @@ return { inventoryName = "top", slot = 1 }
 ```
 
 The slot must contain a writable Iota item. `iotaBridge.lua` converts the compiler's Lua values to Hex Casting SNBT. The downloader preserves an existing `hccConfig.lua`.
+
+## One-file offline install
+
+Transfer [HCCInstaller.lua](HCCInstaller.lua) to the CC computer and run `HCCInstaller` from its root directory. The installer contains every runtime file and does not use HTTP. Run `HCCInstaller <directory>` to choose another destination. Existing `hexMap`, `hccConfig.lua`, and `startup.lua` files are preserved; changed program files are backed up with an `.hcc-backup` suffix before replacement. Restart the computer after a fresh `startup.lua` installation to enable shell completion. Developers can regenerate the bundle with `node tools/build-installer.js`.
 ## Quick Start
 [jump to turtorial](TUTORIAL.md)
 

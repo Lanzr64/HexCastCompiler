@@ -7,6 +7,8 @@
 
 # 下载器
 
+更简便的离线安装方式：只传输 `HCCInstaller.lua`，在电脑根目录运行 `HCCInstaller`。脚本会解压并安装全部运行文件，保留已有 `hexMap`、`hccConfig.lua` 和 `startup.lua`，不需要启用 HTTP。首次安装后编辑 `hccConfig.lua`，必要时重启电脑以加载命令补全。
+
 `HCCDownloader.lua` 下载本分支的程序文件，包括 `hex.lua`、`hexMap`、`iotaTools.lua`、`iotaBridge.lua`、`hccConfig.lua`、`hedit.lua` 和 `startup.lua`。
 只需要下载下来运行它一次即可；若本地已有 `hexMap` 或 `hccConfig.lua`，下载器不会覆盖，其他文件会更新。
 
