@@ -27,9 +27,10 @@ local function target()
 end
 
 function bridge.isAvailable()
-    return type(hexIota) == "table"
-        and type(config.inventoryName) == "string"
-        and peripheral.isPresent(config.inventoryName)
+    if type(hexIota) ~= "table" or type(config.inventoryName) ~= "string"
+        or type(config.slot) ~= "number" then return false end
+    local ok, holder = pcall(hexIota.isIotaHolder, config.inventoryName, config.slot)
+    return ok and holder == true
 end
 
 local function numberTag(value)

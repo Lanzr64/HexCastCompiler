@@ -3,10 +3,10 @@ Chinese | [Engligh](README_EN.md)
 
 一个在 CC:Tweaked 中运行的 Hex Casting 编译器。本分支使用服务端 `cc_hex_plugin` 的全局 `hexIota` API，读写库存外设指定槽位内的 Iota 物品，无需 Ducky Peripherals 的 focal port。
 
-服务端需要 CC:Tweaked、Hex Casting 和 `cc_hex_plugin`；客户端按服务器要求安装 CC:Tweaked 与 Hex Casting。编辑 `hccConfig.lua`，将 `inventoryName` 设为 `peripheral.getNames()` 中可见的库存外设名，将 `slot` 设为目标物品的槽位（从 1 开始）。例如：
+服务端需要 CC:Tweaked、Hex Casting 和 `cc_hex_plugin` 1.0.1 或更新版本；客户端按服务器要求安装 CC:Tweaked 与 Hex Casting。编辑 `hccConfig.lua`，将 `inventoryName` 设为紧邻电脑的方位名，将 `slot` 设为目标物品的槽位（从 1 开始）。当前支持 `top`、`bottom`、`front`、`back`、`left`、`right`；有线网络的库存名称暂不支持。例如：
 
 ```lua
-return { inventoryName = "minecraft:chest_0", slot = 3 }
+return { inventoryName = "top", slot = 1 }
 ```
 
 目标槽位必须有可写 Iota 的物品。空槽、错误物品、只读库存等情况会由 `hexIota` 返回错误。写入支持图案、数字、布尔、向量及其列表，和 mod 的安全类型限制一致。

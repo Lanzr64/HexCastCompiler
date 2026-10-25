@@ -1,6 +1,6 @@
--- Use a name returned by peripheral.getNames(), for example "left" or "minecraft:chest_0".
+-- Use a directly adjacent side: top, bottom, front, back, left, or right.
 -- Slots follow CC's one-based inventory numbering.
 return {
-    inventoryName = "left",
+    inventoryName = "top",
     slot = 1,
 }

@@ -2,7 +2,7 @@
 
 使用本分支的前提是服务端安装 [CC:Tweaked](https://modrinth.com/mod/cc-tweaked)、[Hex Casting](https://modrinth.com/mod/hex-casting) 和 `cc_hex_plugin`。客户端按服务器要求安装前两个 mod。其中 CC:Tweaked 简称 CC。
 
-- 下文旧称“核心端口”的地方，在本分支指 `hccConfig.lua` 中配置的库存外设名与槽位。配置示例：`return { inventoryName = "left", slot = 1 }`。电脑可用 `peripheral.getNames()` 查看外设名，槽位从 1 开始，目标槽位应放入可写 Iota 的物品。
+- 下文旧称“核心端口”的地方，在本分支指 `hccConfig.lua` 中配置的邻接库存方位与槽位。配置示例：`return { inventoryName = "top", slot = 1 }`。支持 `top`、`bottom`、`front`、`back`、`left`、`right`，槽位从 1 开始，目标槽位应放入可写 Iota 的物品。当前版本暂不支持有线网络库存名称。
 - 如果没有特别说明，那么一切操作都是在 CC 的计算机中进行的，
 
 # 下载器

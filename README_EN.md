@@ -3,10 +3,10 @@ English | [Chinese](README.md)
 
 An in-game Hex Casting compiler for CC:Tweaked. This branch uses the server-side `cc_hex_plugin` global `hexIota` API to read and write an Iota item in a named inventory peripheral. It does not require Ducky Peripherals or a focal port.
 
-Install CC:Tweaked, Hex Casting, and `cc_hex_plugin` on the server. Edit `hccConfig.lua` with an inventory name from `peripheral.getNames()` and a one-based slot number:
+Install CC:Tweaked, Hex Casting, and `cc_hex_plugin` 1.0.1 or newer on the server. Edit `hccConfig.lua` with a directly adjacent side (`top`, `bottom`, `front`, `back`, `left`, or `right`) and a one-based slot number. Wired network inventory names are not supported by the current bridge version:
 
 ```lua
-return { inventoryName = "minecraft:chest_0", slot = 3 }
+return { inventoryName = "top", slot = 1 }
 ```
 
 The slot must contain a writable Iota item. `iotaBridge.lua` converts the compiler's Lua values to Hex Casting SNBT. The downloader preserves an existing `hccConfig.lua`.
