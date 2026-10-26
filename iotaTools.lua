@@ -366,103 +366,40 @@ end
 
 
 function table2str(t)
-    local function serialize(tbl)
-        local tmp = {}
-        local is_array = #tbl > 0
-        
-        for k, v in pairs(tbl) do
-            local k_type = type(k)
-            local v_type = type(v)
-            
-            local key = ""
-            if not is_array then
-                if k_type == "string" then
-                    key = "[\"" .. k .. "\"]="
-                elseif k_type == "number" then
-                    key = "[" .. k .. "]="
-                end
-            end
-
-            local value
-            if v_type == "table" then
-                value = serialize(v)
-            elseif v_type == "boolean" then
-                value = tostring(v)
-            elseif v_type == "string" then
-                value = "\"" .. v .. "\""
-            elseif v_type == "number" then
-                value = tostring(v)
-            else
-                value = tostring(v)
-            end
-
-            if value then
-                table.insert(tmp, key .. value)
+    local function serialize(value)
+        local kind = type(value)
+        if kind == "string" then return string.format("%q", value) end
+        if kind == "number" or kind == "boolean" then return tostring(value) end
+        assert(kind == "table", "Unsupported Iota value: " .. kind)
+        local count = #value
+        local array = true
+        for key in pairs(value) do
+            if type(key) ~= "number" or key % 1 ~= 0 or key < 1 or key > count then
+                array = false
+                break
             end
         end
-
-        return "{" .. table.concat(tmp, ",") .. "}"
+        local parts = {}
+        if array then
+            for i = 1, count do parts[#parts + 1] = serialize(value[i]) end
+        else
+            local keys = {}
+            for key in pairs(value) do keys[#keys + 1] = key end
+            table.sort(keys, function(a, b) return tostring(a) < tostring(b) end)
+            for _, key in ipairs(keys) do
+                parts[#parts + 1] = "[" .. serialize(key) .. "]=" .. serialize(value[key])
+            end
+        end
+        return "{" .. table.concat(parts, ",") .. "}"
     end
-
-    assert(type(t) == "table", "Input must be a table")
     return serialize(t)
 end
 
-local numMap = {
-    ["q"] = (function (sum)
-        return sum + 5
-    end),
-    ["e"] = (function (sum)
-        return sum + 10
-    end),
-    ["d"] = (function (sum)
-        return sum / 2
-    end),
-    ["w"] = (function (sum)
-        return sum + 1
-    end),
-    ["a"] = (function (sum)
-        return sum * 2
-    end)
-}
-local function getPatternNum(str)
-    str = string.gsub(str,"aqaa","")
-    local sum = 0 
-    for char in str:gmatch(".") do
-        sum = numMap[char](sum)
-    end
-    return tostring(sum)
-end
 function decompilation()
-    local indentation_level = 0
-    anti_hexMap = {}
-    for cmd, iota in pairs(hexMap) do
-        anti_hexMap[iota] = cmd
-    end
-    data = dev.readIota()
-    f = io.open("_dec_out","w")
-    for index,iota  in pairs(data) do
-        local str = ""
-        local cmd = anti_hexMap[iota["angles"]]
-        if cmd == "}" then
-            indentation_level = indentation_level - 1
-        end
-        for i = 1, indentation_level, 1 do
-            str = str.."    "
-        end
-        if cmd ~= nil then 
-            str = str..cmd
-        elseif string.match(iota["angles"],"^aqaa") ~= nil then
-            str = str..getPatternNum(iota["angles"])
-        else
-            str = str..iota["angles"]
-        end
-        f.write(f,str.."\n")
-        if cmd == "{" then
-            indentation_level = indentation_level + 1
-        end
-    end
-    f.close(f)
+    local text = require("iotaDecompiler").render(dev.readIota(), hexMap, rawMap)
+    local output = assert(io.open("_dec_out", "w"))
+    output:write(text)
+    output:close()
 end
 
 
@@ -584,7 +521,17 @@ end
 function append_raw()
     local param2 = arg[3]
     data = dev.readIota()
-    if not (param2 ~= nil and param2 == "list")then 
+    if param2 == "list" then
+        assert(type(data) == "table" and data.angles == nil
+            and data.x == nil and data.y == nil and data.z == nil
+            and not data.null and not data.garbage,
+            "append raw list expects a list Iota")
+        for key in pairs(data) do
+            assert(type(key) == "number" and key % 1 == 0
+                and key >= 1 and key <= #data,
+                "append raw list expects a list Iota")
+        end
+    else
         data = {data}
     end
     local targetFile = "hexMap"
@@ -600,10 +547,9 @@ function append_raw()
     o_str = ""
     o_str_lsit = {}
     o_list = {}
-    for index,p_iota  in pairs(data) do
+    for index,p_iota in ipairs(data) do
         
-        local str =  "    [\"%s\"] = " .. table2str(p_iota) .. ",\n"
-        table.insert(o_str_lsit,str)
+        table.insert(o_str_lsit, table2str(p_iota))
         table.insert(o_list,true)
     end
     
@@ -615,7 +561,11 @@ function append_raw()
         if status then
             term_m:write(i..". ",false)
             ret = term_m:read()
-            o_str = o_str .. string.format(o_str_lsit[valid_index],ret)
+            assert(ret:match("^[%a_][%w_]*$") and ret ~= "true"
+                and ret ~= "false" and ret ~= "null" and ret ~= "garbage",
+                "rawMap name must be a non-reserved identifier")
+            o_str = o_str .. "    [" .. string.format("%q", ret) .. "] = "
+                .. o_str_lsit[valid_index] .. ",\n"
             valid_index = valid_index + 1
         else
             term_m:write(i..". IOTA INVALID",true)

@@ -173,14 +173,17 @@ local regMap = {
 
 function addOtherIota(cStr)
     local outIota = nil
-    if string.match(cStr,"^(-?[%d%.]+)$") then 
-        local num = string.match(cStr,"(-?[%d%.]+)")
-        outIota = tonumber(num)
-    
-    elseif string.match(cStr,"^%([\t ]*(-?[%d%.]+)[\t ]*,[\t ]*(-?[%d%.]+)[\t ]*,[\t ]*(-?[%d%.]+)[\t ]*%)$") then
-        local x,y,z = string.match(cStr,"%([\t ]*(-?[%d%.]+)[\t ]*,[\t ]*(-?[%d%.]+)[\t ]*,[\t ]*(-?[%d%.]+)[\t ]*%)")
-        outIota = {x = tonumber(x),y = tonumber(y),z = tonumber(z)}
-    end 
+    if cStr == "true" then outIota = true
+    elseif cStr == "false" then outIota = false
+    elseif cStr == "null" then outIota = {null = true}
+    elseif cStr == "garbage" then outIota = {garbage = true}
+    elseif cStr:match("^%b()$") then
+        local x, y, z = cStr:match("^%(%s*([^,]+)%s*,%s*([^,]+)%s*,%s*([^,]+)%s*%)$")
+        x, y, z = tonumber(x), tonumber(y), tonumber(z)
+        if x and y and z then outIota = {x = x, y = y, z = z} end
+    elseif cStr:match("^[%+%-%d%.eE]+$") then
+        outIota = tonumber(cStr)
+    end
     if outIota ~= nil then
         appendHexlist(outIota)
         return true
@@ -311,32 +314,30 @@ function parseStr(str)
                 parseStr(retstr)
                 break
             end
-            if (string.match(cut,genRegex("%%.*"))) then
-                local cStr = cut
-                regex = "[%w._,%(%)-]*"
-                if (string.match(cStr,genRegex("%%%%"..regex))) then
-                    cStr = string.match(cStr,genRegex("%%%%("..regex..")"))
-                elseif (string.match(cStr,genRegex("%%"..regex))) then
-                    escapeFlag = true
-                    cStr = string.match(cStr,genRegex("%%("..regex..")"))
-                else 
-                    print("quit")
-                    syntaxFlag = false
-                    break
-                end
-                if escapeFlag then
-                    addEscape()
-                end
-                if string.match(cStr,genRegex("[%a_]+[%w_]*")) then
-                    local cStr = string.match(cStr,genRegex("([%a_]+[%w_]*)"))
-                    syntaxFlag = addRawIota(cStr)
-                    break
+            if string.match(cut, genRegex("%%%%%[")) then
+                listBraceLetSum = listBraceLetSum + 1
+                hexListStack[listBraceLetSum] = currentHexlist
+                currentHexlist = {}
+                break
+            end
+            if string.match(cut,genRegex("%%.*")) then
+                local raw = cut:match("^%s*(.-)%s*$")
+                local cStr
+                if raw:sub(1, 2) == "%%" then
+                    cStr = raw:sub(3)
                 else
-                    local cStr = string.match(cStr,genRegex("([%d%.-%,%(%)]+)"))
-                    syntaxFlag = addOtherIota(cStr)
-                    break
+                    escapeFlag = true
+                    cStr = raw:sub(2)
                 end
-                syntaxFlag = false
+                if cStr == "" then syntaxFlag = false; break end
+                if escapeFlag then addEscape() end
+                if cStr ~= "true" and cStr ~= "false" and cStr ~= "null"
+                    and cStr ~= "garbage" and cStr:match("^[%a_][%w_]*$")
+                    and rawMap[cStr] ~= nil then
+                    syntaxFlag = addRawIota(cStr)
+                else
+                    syntaxFlag = addOtherIota(cStr)
+                end
                 break
             end
             if (string.match(cut,genRegex("%["))) then

@@ -31,7 +31,7 @@ Transfer [HCCInstaller.lua](HCCInstaller.lua) to the CC computer and run `HCCIns
     `Usage: iotaTools <cmd> [Param]`
     cmd can be :
     - `toStr`: save the configured slot's Iota as `_toStr_out`
-    - `dec`: decompile a pattern list from the configured slot to `_dec_out`
+    - `dec`: decompile a list containing patterns, raw values and nested lists from the configured slot to `_dec_out`
     - `append`: add patterns or raw Iotas read from the configured slot to `hexMap`
    
 5. startup.lua

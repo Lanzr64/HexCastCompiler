@@ -19,7 +19,7 @@ return { inventoryName = "top", slot = 1 }
 HCCInstaller
 ```
 
-安装器已内嵌 `hex.lua`、`hex_old.lua`、`hedit.lua`、`iotaTools.lua`、`iotaBridge.lua`、`hexMap`、`hccConfig.lua` 和 `startup.lua`，运行时无需 HTTP。也可用 `HCCInstaller <目录>` 指定安装目录。已有的 `hexMap`、`hccConfig.lua` 和 `startup.lua` 会保留；其他同名文件若需要更新，旧版会保存为 `.hcc-backup` 文件。首次安装 `startup.lua` 后重启电脑可启用命令补全；若电脑原本已有 `startup.lua`，安装器不会修改它。
+安装器已内嵌 `hex.lua`、`hex_old.lua`、`hedit.lua`、`iotaTools.lua`、`iotaDecompiler.lua`、`iotaBridge.lua`、`hexMap`、`hccConfig.lua` 和 `startup.lua`，运行时无需 HTTP。也可用 `HCCInstaller <目录>` 指定安装目录。已有的 `hexMap`、`hccConfig.lua` 和 `startup.lua` 会保留；其他同名文件若需要更新，旧版会保存为 `.hcc-backup` 文件。首次安装 `startup.lua` 后重启电脑可启用命令补全；若电脑原本已有 `startup.lua`，安装器不会修改它。
 
 修改运行文件后，可在开发机执行 `node tools/build-installer.js` 重新生成安装器。
 
@@ -43,7 +43,7 @@ HCCInstaller
    使用方法：`iotaTools <命令> [参数]`  
    命令可选：  
    - `toStr`：将配置的库存槽位中的 Iota 转为字符串并保存至 `_toStr_out` 文件
-   - `dec`：根据 hexMap 对该槽位中的图案列表进行反编译，结果存入 `_dec_out` 文件
+   - `dec`：根据 hexMap 对该槽位中的 Iota 列表进行反编译，支持图案、数字、矢量、布尔值、空值、垃圾值和嵌套列表，结果存入 `_dec_out` 文件
    - `append`：读取该槽位中的 Iota，将新图案或原始 Iota 追加到 `hexMap`
 
 `iotaBridge.lua` 负责 Lua Iota 与 Hex Casting SNBT 的转换；`hccConfig.lua` 保存库存外设名和槽位。下载器会下载这两个文件，且不会覆盖已有的 `hccConfig.lua`。

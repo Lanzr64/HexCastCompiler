@@ -5,6 +5,7 @@ files = {
     "hex.lua",
     "hedit.lua",
     "iotaTools.lua",
+    "iotaDecompiler.lua",
     "iotaBridge.lua",
     "hccConfig.lua",
     "startup.lua"}

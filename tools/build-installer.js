@@ -10,6 +10,7 @@ const files = [
     "hex_old.lua",
     "hedit.lua",
     "iotaTools.lua",
+    "iotaDecompiler.lua",
     "iotaBridge.lua",
     "startup.lua",
 ];
