@@ -135,11 +135,19 @@ function decompiler.render(data, hexMap, rawMap)
                 value = list[index]
             end
             if isList(value) then
-                emit(escaped and "[" or "%%[")
-                indent = indent + 1
-                renderList(value, depth + 1)
-                indent = indent - 1
-                emit("]")
+                if escaped then
+                    emit("[")
+                    indent = indent + 1
+                    renderList(value, depth + 1)
+                    indent = indent - 1
+                    emit("]")
+                else
+                    local alias = rawName(value, rawMap)
+                    if not alias then
+                        error("list without an escape pattern needs a rawMap alias")
+                    end
+                    emit("%%" .. alias)
+                end
             elseif isPattern(value) then
                 local literal, raw = patternText(value, names, rawMap)
                 emit(raw and (escaped and "%" or "%%") .. literal or literal)
